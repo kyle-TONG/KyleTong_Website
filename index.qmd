@@ -4,7 +4,7 @@ title: ""
 
 ::::: columns
 ::: {.column width="35%"}
-![](images/profile.png){width="100%"}
+![](images/profile.jpg){width="80%"}
 :::
 
 ::: {.column width="65%"}
