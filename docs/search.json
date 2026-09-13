@@ -11,21 +11,21 @@
     "href": "bio.html",
     "title": "About Me",
     "section": "",
-    "text": "Write a short biography here.\nInclude:"
+    "text": "Master of Applied Economics and Data Science, University of Pennsylvania (Expected 2027);\nBachelor of Science in Risk Management and Business Intelligence, double major in Computer Science, Hong Kong University of Science and Technology (Class of 2026)"
   },
   {
     "objectID": "bio.html#education",
     "href": "bio.html#education",
     "title": "About Me",
-    "section": "Education",
-    "text": "Education\nMaster of Applied Economics and Data Science, University of Pennsylvania (expaceted 2027) Batelor of Science, University Name 2026"
+    "section": "",
+    "text": "Master of Applied Economics and Data Science, University of Pennsylvania (Expected 2027);\nBachelor of Science in Risk Management and Business Intelligence, double major in Computer Science, Hong Kong University of Science and Technology (Class of 2026)"
   },
   {
     "objectID": "bio.html#interests",
     "href": "bio.html#interests",
     "title": "About Me",
     "section": "Interests",
-    "text": "Interests\n\nEconometrics\nMachine Learning\nData Analysis"
+    "text": "Interests\n\nMacro Research\nFixed Income\nAsset Management"
   },
   {
     "objectID": "bio.html#contact",
@@ -46,7 +46,7 @@
     "href": "blog/index.html",
     "title": "Blog",
     "section": "",
-    "text": "My First Blog Post\n\n\n\n\n\n\n\n\n\n\n\nJun 16, 2026\n\n\n\n\n\n\n\n\n\n\n\n\nMy Second Blog Post\n\n\n\n\n\n\n\n\n\n\n\nJun 16, 2026\n\n\n\n\n\n\nNo matching items"
+    "text": "The average that disagrees with all of its parts\n\n\nSimpson’s paradox, and why ratios refuse to add up\n\n\nBerkeley’s 1973 admissions gap disappears once you look at departments. The arithmetic behind that is simple, and it is a trap you can walk into with any pooled comparison.\n\n\n\n\n\nSep 12, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nMy Second Blog Post\n\n\n\n\n\n\n\n\n\n\n\nJun 16, 2026\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "blog/posts/post1/Untitled.html",
@@ -75,5 +75,47 @@
     "title": "About",
     "section": "",
     "text": "About this site\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "blog/posts/post1/index.html",
+    "href": "blog/posts/post1/index.html",
+    "title": "The average that disagrees with all of its parts",
+    "section": "",
+    "text": "In 1973 the graduate school at Berkeley admitted about 44% of men who applied and about 30% of women. Thousands of applicants sit behind those two numbers, so the gap is not noise. Split the same applicants by department and it very nearly disappears. In the largest department of all, women were admitted at a higher rate than men.\nNothing was recounted. The two statements are about the same people."
+  },
+  {
+    "objectID": "blog/posts/post1/index.html#what-the-berkeley-numbers-look-like",
+    "href": "blog/posts/post1/index.html#what-the-berkeley-numbers-look-like",
+    "title": "The average that disagrees with all of its parts",
+    "section": "What the Berkeley numbers look like",
+    "text": "What the Berkeley numbers look like\nR ships with the data, so you can check this in four lines.\n\nrates &lt;- as.data.frame(UCBAdmissions) |&gt;\n  group_by(Dept, Gender) |&gt;\n  summarise(applicants = sum(Freq),\n            admitted   = sum(Freq[Admit == \"Admitted\"]),\n            .groups    = \"drop\") |&gt;\n  mutate(rate = admitted / applicants)\n\nrates |&gt;\n  select(Dept, Gender, applicants, rate) |&gt;\n  pivot_wider(names_from = Gender, values_from = c(applicants, rate)) |&gt;\n  transmute(Department    = Dept,\n            `Men applied` = applicants_Male,\n            `Men admitted` = sprintf(\"%.0f%%\", 100 * rate_Male),\n            `Women applied` = applicants_Female,\n            `Women admitted` = sprintf(\"%.0f%%\", 100 * rate_Female)) |&gt;\n  knitr::kable(align = \"lrrrr\")\n\n\n\nTable 1: Admission rates by department, six largest departments, Berkeley 1973.\n\n\n\n\n\n\nDepartment\nMen applied\nMen admitted\nWomen applied\nWomen admitted\n\n\n\n\nA\n825\n62%\n108\n82%\n\n\nB\n560\n63%\n25\n68%\n\n\nC\n325\n37%\n593\n34%\n\n\nD\n417\n33%\n375\n35%\n\n\nE\n191\n28%\n393\n24%\n\n\nF\n373\n6%\n341\n7%\n\n\n\n\n\n\n\n\nDepartments A and B admitted more than 60% of everyone who applied. Departments C through F admitted far fewer. Men applied overwhelmingly to A and B; women applied overwhelmingly to C through F.\n\npooled &lt;- rates |&gt;\n  group_by(Gender) |&gt;\n  summarise(rate = sum(admitted) / sum(applicants))\n\nggplot(rates, aes(Dept, rate, colour = Gender)) +\n  geom_hline(data = pooled, aes(yintercept = rate, colour = Gender),\n             linetype = \"dashed\", linewidth = 0.4) +\n  geom_point(aes(size = applicants)) +\n  scale_y_continuous(labels = scales::percent) +\n  scale_size_area(max_size = 8) +\n  labs(x = \"department\", y = \"admission rate\", colour = NULL, size = \"applicants\")\n\n\n\n\n\n\n\nFigure 1: Admission rate by department and gender. Point size is the number of applicants. Dashed lines are the pooled rates.\n\n\n\n\n\nThe dashed lines are far apart. The points are not."
+  },
+  {
+    "objectID": "blog/posts/post1/index.html#why-ratios-can-do-this",
+    "href": "blog/posts/post1/index.html#why-ratios-can-do-this",
+    "title": "The average that disagrees with all of its parts",
+    "section": "Why ratios can do this",
+    "text": "Why ratios can do this\nA pooled rate is a weighted average of the department rates,\n\\[\n\\bar r = \\sum_d w_d \\, r_d, \\qquad w_d = \\frac{n_d}{\\sum_k n_k},\n\\]\nand the weights \\(w_d\\) are part of the data, not a constant you can divide out. Men and women faced the same \\(r_d\\) but carried different \\(w_d\\), and the difference in weights is bigger than the differences in rates. Pooling therefore measures something nobody intended to measure: where each group chose to apply."
+  },
+  {
+    "objectID": "blog/posts/post1/index.html#why-it-feels-impossible",
+    "href": "blog/posts/post1/index.html#why-it-feels-impossible",
+    "title": "The average that disagrees with all of its parts",
+    "section": "Why it feels impossible",
+    "text": "Why it feels impossible\nCounts behave the way intuition expects. If men outnumber women in every department, they outnumber women overall, always. We quietly extend that rule to percentages, and for percentages it is false. Adding a fraction to a fraction means adding numerators and denominators separately, and the denominators are free to move.\nThe phenomenon predates its name by half a century. Pearson noticed in 1899 that mixing two populations manufactures correlations that exist in neither, and Yule gave the contingency-table version in 1903. Simpson’s 1951 paper worked out what the reversal means for interpreting interaction, and Blyth attached his name to it in 1972. Yule had it first, which is why some writers call it the Yule-Simpson effect.\nOne thing the Berkeley example does not show is that there was no discrimination. Bickel and his coauthors, writing in Science in 1975, made that point themselves: conditioning on department moves the question rather than closing it, since departments differ in funding and capacity, and applicants do not choose where to apply in a vacuum."
+  },
+  {
+    "objectID": "blog/posts/post1/index.html#takeaway",
+    "href": "blog/posts/post1/index.html#takeaway",
+    "title": "The average that disagrees with all of its parts",
+    "section": "Takeaway",
+    "text": "Takeaway\nA pooled comparison is an average, and an average has weights. When two groups are averaged with different weights, the pooled numbers can point the opposite way from every group inside them. Before you read anything into a headline rate, find out what is being averaged and how the weights differ. The reversal is not a rare pathology; it is what happens whenever composition and outcome are related.\nAdmissions counts are UCBAdmissions in R’s datasets package, from Bickel, Hammel and O’Connell (1975), Science 187, 398–404."
+  },
+  {
+    "objectID": "bio.html#junhaotsas.upenn.edu",
+    "href": "bio.html#junhaotsas.upenn.edu",
+    "title": "About Me",
+    "section": "junhaot@sas.upenn.edu",
+    "text": "junhaot@sas.upenn.edu"
   }
 ]

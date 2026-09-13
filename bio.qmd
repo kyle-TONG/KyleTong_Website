@@ -4,7 +4,8 @@ title: "About Me"
 
 ## Education
 
-Master of Applied Economics and Data Science, University of Pennsylvania (expected 2027);
+Master of Applied Economics and Data Science, University of Pennsylvania (Expected 2027);
+
 Bachelor of Science in Risk Management and Business Intelligence, double major in Computer Science, Hong Kong University of Science and Technology (Class of 2026)
 
 ## Interests
