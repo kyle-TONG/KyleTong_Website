@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Kyle Tong">
+<meta name="dcterms.date" content="2026-09-21">
 
-<title>About – Student Name</title>
+<title>Data notes: Basketball-Reference salary and production scrape – Student Name</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -61,23 +63,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-6033a600180109c3731f6a886c29932c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../../">
+<script src="../../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../../site_libs/bootstrap/bootstrap-6033a600180109c3731f6a886c29932c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -106,8 +108,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<link rel="stylesheet" href="styles.css">
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../../styles.css">
 </head>
 
 <body class="nav-fixed fullcontent quarto-light">
@@ -117,7 +148,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../../../index.html">
     <span class="navbar-title">Student Name</span>
     </a>
   </div>
@@ -128,19 +159,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./index.html"> 
+    <a class="nav-link" href="../../../../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./bio.html"> 
+    <a class="nav-link" href="../../../../bio.html"> 
 <span class="menu-text">About Me</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./resume.html"> 
+    <a class="nav-link" href="../../../../resume.html"> 
 <span class="menu-text">Resume</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./blog/index.html"> 
+    <a class="nav-link" href="../../../../blog/index.html"> 
 <span class="menu-text">Blog</span></a>
   </li>  
 </ul>
@@ -160,14 +191,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">About</h1>
+<h1 class="title">Data notes: Basketball-Reference salary and production scrape</h1>
+<p class="subtitle lead">Provenance, cleaning decisions and known limitations</p>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Kyle Tong </p>
+          </div>
+  </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 21, 2026</p>
+    </div>
+  </div>
   
     
   </div>
@@ -177,15 +221,83 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>About this site</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 2</code></pre>
-</div>
-</div>
+<p>These notes accompany <a href="../../../../blog/posts/post2/index.html">Paying for wins</a>. They record where the data came from, what was done to it, and what it cannot support.</p>
+<section id="sources" class="level2">
+<h2 class="anchored" data-anchor-id="sources">Sources</h2>
+<p>Three pages from Basketball-Reference, fetched once and cached as HTML snapshots in <code>data/raw/</code>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Key</th>
+<th>Page</th>
+<th>What it gives</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>advanced_2026</code></td>
+<td><code>/leagues/NBA_2026_advanced.html</code></td>
+<td>2025-26 advanced stats: minutes, PER, USG%, WS, WS/48, BPM, VORP</td>
+</tr>
+<tr class="even">
+<td><code>advanced_2025</code></td>
+<td><code>/leagues/NBA_2025_advanced.html</code></td>
+<td>the same for 2024-25, used to stabilise one-season BPM</td>
+</tr>
+<tr class="odd">
+<td><code>contracts</code></td>
+<td><code>/contracts/players.html</code></td>
+<td>salary by season from 2026-27 through 2031-32, plus guaranteed money</td>
+</tr>
+</tbody>
+</table>
+<p>Exact URLs, file sizes and access timestamps are in <code>data/raw/metadata.csv</code>, written by <code>R/01_acquire.R</code> at download time.</p>
+<p>Basketball-Reference has no public API for these tables and no bulk download of them, so scraping is the remaining structured option. <code>robots.txt</code> permits <code>/leagues/</code> and <code>/contracts/</code> for a generic user agent, disallows <code>*/gamelog/</code>, <code>*/splits/</code>, <code>*/on-off/</code>, <code>*/lineups/</code> and <code>*/shooting/</code>, none of which are touched here, and asks for <code>Crawl-delay: 3</code>. The acquisition script waits four seconds between requests, sends an identifying user agent with a contact address, and makes three requests in total. Re-runs read the cached snapshots unless called with <code>--force</code>.</p>
+<p>Basketball-Reference data are copyright Sports Reference LLC. Nothing here redistributes the underlying tables; the derived files are summary measures built for a class exercise.</p>
+</section>
+<section id="pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="pipeline">Pipeline</h2>
+<pre><code>R/00_config.R    paths, source list, constants, text helpers
+R/01_acquire.R   fetch -&gt; data/raw/*.html + metadata.csv
+R/02_clean.R     parse -&gt; data/derived/*.csv
+R/03_analyze.R   price -&gt; results/tables/*.csv
+index.qmd        narrative, figures, tables</code></pre>
+<p>Each script is runnable on its own with <code>Rscript</code>, in order. Only <code>01_acquire.R</code> touches the network.</p>
+</section>
+<section id="cleaning-decisions" class="level2">
+<h2 class="anchored" data-anchor-id="cleaning-decisions">Cleaning decisions</h2>
+<p>Footnote markers. Names on Basketball-Reference carry bracketed footnotes and, on some pages, asterisks for Hall of Fame members. <code>clean_text()</code> strips <code>[...]</code> and <code>*</code> before anything else looks at the string.</p>
+<p>Traded players. A player who changed teams mid-season appears once per team plus a combined <code>2TM</code> or <code>3TM</code> row, all sharing a rank. The combined row is kept and the partial rows dropped, so each player contributes one season.</p>
+<p>Name matching. The stats pages and the contracts page are joined on the player name after transliterating accents (Jokić becomes Jokic), dropping periods and apostrophes, converting hyphens to spaces, removing generational suffixes, and lower-casing. 416 of 484 contracts matched a 2025-26 season, or 86 percent. The unmatched contracts are written to <code>data/derived/unmatched_contracts.csv</code>; they are overwhelmingly 2026 draft picks with no NBA minutes yet and players who missed all of last season, not name collisions.</p>
+<p>Minutes floor. The analysis sample keeps players with at least 500 minutes in 2025-26. Below that, rate statistics are too noisy to price.</p>
+<p>Duplicate contracts. If a name appears more than once on the contracts page, the larger 2026-27 figure is kept.</p>
+</section>
+<section id="validation" class="level2">
+<h2 class="anchored" data-anchor-id="validation">Validation</h2>
+<p>VORP on Basketball-Reference satisfies</p>
+<p><span class="math display">\[\text{VORP} = (\text{BPM} + 2) \times \frac{\text{MP}}{48 \times 82},\]</span></p>
+<p>so <code>02_clean.R</code> recomputes it from the parsed BPM and minutes columns and stops if any player’s recomputed value differs from the scraped value by more than 0.15. This catches the common scraping failures at once: columns shifted by one, numbers parsed as text, header rows read as data. The script also checks that each snapshot contains the table it was fetched for, that the salary column parsed to positive numbers, that no player-season is duplicated, and that the match rate clears 75 percent.</p>
+</section>
+<section id="limitations" class="level2">
+<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
+<p>The production measure and the salary refer to different seasons. Salary is the 2026-27 figure; production is 2025-26, blended with 2024-25 at one-third weight. Players change between June and October, and a projection built this way will be wrong about the ones who change most.</p>
+<p>BPM and VORP are box-score estimates. They do not see defensive positioning, screening, gravity, or anything else that does not end in a counted event, and their positional adjustments are contested. The position comparison in the post is the finding most exposed to this.</p>
+<p>Players with no 2025-26 minutes are absent from the analysis, which removes the largest contracts belonging to injured stars. Any statement about the efficiency of the top of the market is conditional on having played.</p>
+<p>Salary is not the full cost of a roster spot. Luxury tax, apron restrictions, trade exceptions and the value of draft picks all change what a contract is worth to a team, and none of them are in this data.</p>
+</section>
+<section id="reuse" class="level2">
+<h2 class="anchored" data-anchor-id="reuse">Reuse</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Rscript</span> blog/posts/post2/R/01_acquire.R   <span class="co"># cached; add --force to re-download</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Rscript</span> blog/posts/post2/R/02_clean.R</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Rscript</span> blog/posts/post2/R/03_analyze.R</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -592,7 +704,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p><img src="./images/UniversityofPennsylvania_FullLogo_RGB.png" class="img-fluid" width="100"></p>
+<p><img src="../../../../images/UniversityofPennsylvania_FullLogo_RGB.png" class="img-fluid" width="100"></p>
 </div>   
     <div class="nav-footer-center">
 <p>© 2026 Student Name</p>

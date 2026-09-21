@@ -1,9 +1,476 @@
 ---
-title: "My Second Blog Post"
-date: 2026-06-16
+title: "Paying for wins"
+subtitle: "Scraping Basketball-Reference to find out what NBA production costs, and where it costs least"
+author: "Kyle Tong"
+date: 2026-09-21
 categories:
-  - opinion
-  - labor market
+  - web scraping
+  - rvest
+  - sports economics
+description: "Three pages of HTML, 348 players, and one question: if a team has $30 million to spend this October, which part of the market gives it the most production per dollar?"
+execute:
+  warning: false
+  message: false
 ---
 
-## This is my second blog post.
+```{r}
+#| label: setup
+#| include: false
+
+source(here::here("blog", "posts", "post2", "R", "00_config.R"))
+
+library(ggplot2)
+library(knitr)
+library(forcats)
+
+theme_set(theme_minimal(base_size = 12))
+
+analysis  <- read_csv(ANALYSIS_FILE, show_col_types = FALSE)
+salaries  <- read_csv(SALARY_FILE, show_col_types = FALSE)
+metadata  <- read_csv(METADATA_FILE, show_col_types = FALSE)
+match_sum <- read_csv(file.path(DERIVED_DIR, "match_summary.csv"),
+                      show_col_types = FALSE)
+
+# Same grouping the post reports on, defined once.
+salary_tier <- function(x) {
+  cut(x, breaks = c(0, 5, 15, 30, 50, Inf),
+      labels = c("Under $5M", "$5-15M", "$15-30M", "$30-50M", "Over $50M"))
+}
+
+analysis <- analysis |> mutate(tier = salary_tier(salary_m))
+
+price_of_production <- function(df, ...) {
+  df |>
+    group_by(...) |>
+    summarise(players       = n(),
+              median_salary = median(salary_m),
+              median_vorp   = median(proj_vorp),
+              total_salary  = sum(salary),
+              total_vorp    = sum(pmax(proj_vorp, 0)),
+              .groups       = "drop") |>
+    mutate(cost_per_vorp = total_salary / total_vorp / 1e6)
+}
+
+market_fit <- lm(salary ~ proj_vorp, data = analysis)
+analysis <- analysis |>
+  mutate(market_value = predict(market_fit),
+         surplus      = (market_value - salary) / 1e6)
+
+by_tier         <- price_of_production(analysis, tier)
+by_tier_healthy <- price_of_production(filter(analysis, mp >= 1500), tier)
+by_position     <- price_of_production(analysis, pos_group)
+by_pos_healthy  <- price_of_production(filter(analysis, mp >= 1500), pos_group)
+
+cheap_price <- by_tier$cost_per_vorp[by_tier$tier == "Under $5M"]
+mid_price   <- by_tier$cost_per_vorp[by_tier$tier == "$15-30M"]
+slope_m     <- coef(market_fit)[["proj_vorp"]] / 1e6
+intercept_m <- coef(market_fit)[["(Intercept)"]] / 1e6
+accessed    <- substr(min(metadata$accessed_at), 1, 10)
+
+fmt <- function(x, digits = 1) formatC(x, format = "f", digits = digits)
+```
+
+Suppose a team has $30 million of cap space to spend this October. Spread across players
+earning under $5 million a year, it buys about `r fmt(30 / cheap_price)` points of VORP,
+going by what that part of the market produced last season. Spent on one player in the $15
+to $30 million range, it buys about `r fmt(30 / mid_price)`. Multiply by the 2.7 that
+Basketball-Reference uses to turn VORP into wins and the same $30 million is worth roughly
+`r fmt(2.7 * 30 / cheap_price, 0)` wins at one end of the market and
+`r fmt(2.7 * 30 / mid_price, 0)` at the other.
+
+That gap is the question this post is about. The data behind it sits in three HTML tables
+that anyone can read, so the first job is getting them into R.
+
+## Choosing a source that can be scraped
+
+Basketball-Reference publishes season statistics and contract tables as ordinary server
+rendered HTML. There is no public API for them and no bulk download, which puts this
+squarely in the last box of the acquisition decision tree: static HTML, no better
+structured alternative, collection permitted.
+
+Permitted matters. Their `robots.txt` blocks `*/gamelog/`, `*/splits/`, `*/on-off/`,
+`*/lineups/` and `*/shooting/` for a generic user agent, leaves `/leagues/` and
+`/contracts/` open, and asks for a three second crawl delay. This project needs three
+pages, once:
+
+```{r}
+#| label: tbl-sources
+#| echo: false
+#| tbl-cap: "The three pages behind everything below. Snapshots were taken once and cached."
+
+metadata |>
+  transmute(Page = source_url |> str_remove("https://www.basketball-reference.com"),
+            `Saved as` = raw_file,
+            `Size (MB)` = round(bytes / 1e6, 2),
+            Accessed = substr(accessed_at, 1, 10)) |>
+  kable(align = "llrr")
+```
+
+Three requests, four seconds apart, with a user agent that says who is asking and leaves
+an email address. The full acquisition script is in `R/01_acquire.R`; the part that does
+the work is short.
+
+```{r}
+#| label: acquire-demo
+#| eval: false
+
+fetch_snapshot <- function(url, path, force = FALSE) {
+  if (file.exists(path) && !force) {
+    message("cached  ", basename(path))
+    return(invisible(FALSE))
+  }
+
+  Sys.sleep(CRAWL_DELAY)
+  resp <- GET(url, user_agent(USER_AGENT), timeout(60))
+
+  if (status_code(resp) != 200) {
+    stop("request failed with status ", status_code(resp), ": ", url)
+  }
+
+  write_html(read_html(resp), path)
+  invisible(TRUE)
+}
+```
+
+The snapshot is the reason to separate downloading from parsing. Basketball-Reference
+redesigns its tables occasionally, and a selector that works today can return nothing next
+spring. With the HTML on disk, a broken parse is a bug I can fix against the exact page I
+saw, and re-running the analysis costs zero requests to their servers.
+
+## Getting a table out of the page
+
+The season table has the id `advanced`, so one selector finds it and `html_table()` does
+the rest.
+
+```{r}
+#| label: parse-demo
+#| eval: false
+
+page <- read_html(file.path(RAW_DIR, "bbref_advanced_2026.html"))
+
+advanced <- page |>
+  html_element("#advanced") |>
+  html_table()
+```
+
+Sports Reference sites have a habit of burying secondary tables inside HTML comments,
+where `html_element()` cannot see them, and the workaround is worth keeping even when the
+page does not need it. `find_table()` in `R/02_clean.R` looks in the visible document
+first, then inside the comment nodes:
+
+```{r}
+#| label: comment-demo
+#| eval: false
+
+find_table <- function(page, css) {
+  node <- html_element(page, css)
+  if (!inherits(node, "xml_missing")) return(node)
+
+  commented <- xml_find_all(page, "//comment()") |>
+    xml_text() |>
+    keep_containing(css)
+
+  if (length(commented) == 0) stop("no table matching ", css, " in the snapshot")
+  html_element(read_html(commented[[1]]), css)
+}
+```
+
+What comes back is a data frame of strings, and two things in it are wrong in ways that
+would quietly corrupt the analysis. Names carry bracketed footnote markers, so `Jokić[a]`
+and `Jokić` are different players as far as a join is concerned. And a player traded
+mid-season gets one row per team plus a combined `2TM` row, all sharing a rank, so James
+Harden appears three times and would be counted three times.
+
+```{r}
+#| label: traded-demo
+#| eval: false
+
+collapse_traded <- function(df) {
+  df |>
+    group_by(season, rk) |>
+    mutate(traded = any(str_detect(team, "^\\d+TM$"))) |>
+    filter(!traded | str_detect(team, "^\\d+TM$")) |>
+    ungroup() |>
+    select(-traded)
+}
+```
+
+The contracts page needs its own handling: it has a two-row header, so `html_table()`
+hands back the real column names as the first row of data, and every salary arrives as a
+string like `$62,587,158` that `parse_number()` turns into a number.
+
+## Checking that the parse is right
+
+A scrape that runs without error is not a scrape that worked. Columns shift, numbers come
+back as text, a repeated header row sneaks in as a player named "Player". VORP happens to
+give a free way to test for all of that at once, because it is a deterministic function of
+two other columns on the same page:
+
+$$\text{VORP} = (\text{BPM} + 2) \times \frac{\text{MP}}{48 \times 82}.$$
+
+So recompute it and compare:
+
+```{r}
+#| label: validation
+#| echo: true
+
+check <- analysis |>
+  mutate(vorp_hat = (bpm + 2) * mp / (48 * 82),
+         gap      = abs(vorp_hat - vorp))
+
+max(check$gap)
+```
+
+The largest disagreement across `r nrow(analysis)` players is rounding. Had a column been
+off by one, or had minutes been read as a character vector, this number would have been
+nonsense immediately.
+
+## What the join drops
+
+Production comes from the 2025-26 season; salary is the 2026-27 figure, because that is
+the money a team is actually committing now. Joining them on player name, after
+transliterating accents and dropping punctuation and generational suffixes, matched
+`r match_sum$matched` of `r match_sum$contracts` contracts, or
+`r fmt(100 * match_sum$match_rate, 0)` percent. The misses are more interesting than the
+matches.
+
+```{r}
+#| label: tbl-unmatched
+#| echo: false
+#| tbl-cap: "The five largest 2026-27 salaries with no 2025-26 season to price them against."
+
+read_csv(file.path(DERIVED_DIR, "unmatched_contracts.csv"), show_col_types = FALSE) |>
+  slice_max(salary, n = 5) |>
+  transmute(Player = player, Team = team,
+            `2026-27 salary` = paste0("$", fmt(salary / 1e6), "M")) |>
+  kable(align = "llr")
+```
+
+Nobody dropped out because of a spelling mismatch. The unmatched contracts are 2026 draft
+picks who have not played an NBA minute and veterans who missed last season hurt. Tyrese
+Haliburton, Damian Lillard and Kyrie Irving are owed roughly $124 million between them for
+a season none of them produced anything toward. That is a finding rather than a data
+problem, and I come back to it below.
+
+Requiring at least `r match_sum$min_minutes` minutes played leaves `r match_sum$analysed`
+players to work with. Below that, a rate statistic is mostly noise.
+
+## The price of production
+
+The simplest way to ask what a unit of production costs is to regress salary on it. To
+reduce the noise in a single season of BPM, the production measure blends 2025-26 with
+2024-25 at one-third weight and puts the blend back on the VORP scale at this season's
+minutes.
+
+```{r}
+#| label: market-fit
+#| echo: true
+
+market_fit <- lm(salary ~ proj_vorp, data = analysis)
+coef(market_fit)
+```
+
+The slope says the market paid about $`r fmt(slope_m)` million for one point of VORP,
+which is roughly $`r fmt(slope_m / 2.7)` million per win added. The intercept says a
+player who produced nothing at all still collected about $`r fmt(intercept_m)` million,
+which is several times the veteran minimum and the first sign that the relationship is
+looser than it looks. R² is `r fmt(summary(market_fit)$r.squared, 2)`: production explains
+about a third of what players are paid.
+
+```{r}
+#| label: fig-scatter
+#| fig-cap: "Every player with at least 500 minutes in 2025-26, priced against his 2026-27 salary. The line is the fitted market rate. Points well above it are cheap production; points well below it are expensive."
+#| fig-width: 7.5
+#| fig-height: 4.8
+#| echo: false
+
+labelled <- analysis |>
+  filter(surplus > 17 | surplus < -30 | proj_vorp > 5) |>
+  arrange(desc(abs(surplus))) |>
+  mutate(hjust = case_when(salary_m > 45 ~ 1.05,
+                           salary_m < 6  ~ -0.06,
+                           TRUE          ~ 0.5))
+
+ggplot(analysis, aes(salary_m, proj_vorp)) +
+  geom_point(aes(colour = surplus > 0), alpha = 0.55, size = 1.9) +
+  geom_smooth(method = "lm", se = FALSE, colour = "grey30",
+              linewidth = 0.5) +
+  geom_text(data = labelled, aes(label = player, hjust = hjust), size = 2.7,
+            vjust = -0.9, colour = "grey20", check_overlap = TRUE) +
+  scale_colour_manual(values = c(`TRUE` = "#2c7fb8", `FALSE` = "#d95f0e"),
+                      labels = c(`TRUE` = "below the market rate",
+                                 `FALSE` = "above the market rate"),
+                      name = "salary") +
+  scale_x_continuous(labels = scales::label_dollar(suffix = "M"),
+                     expand = expansion(mult = c(0.03, 0.08))) +
+  labs(x = "2026-27 salary", y = "projected VORP") +
+  theme(legend.position = "top")
+```
+
+Victor Wembanyama is the largest single piece of surplus in the league, producing at a
+level the market would charge about $`r fmt(analysis$market_value[analysis$player == "Victor Wembanyama"] / 1e6, 0)`
+million for while still on his rookie scale deal at
+$`r fmt(analysis$salary_m[analysis$player == "Victor Wembanyama"])` million. The other end
+of the chart is a list of maximum contracts attached to players who barely played.
+
+## Where the money goes to die
+
+Sorting players into salary bands makes the pattern easier to read than the scatter does.
+
+```{r}
+#| label: tbl-tier
+#| echo: false
+#| tbl-cap: "Cost of production by salary band. The last column is total salary divided by total positive VORP within the band."
+
+by_tier |>
+  transmute(`Salary band` = tier,
+            Players = players,
+            `Median salary` = paste0("$", fmt(median_salary), "M"),
+            `Median VORP` = fmt(median_vorp, 2),
+            `Cost per VORP` = paste0("$", fmt(cost_per_vorp), "M")) |>
+  kable(align = "lrrrr")
+```
+
+Production gets more expensive as salaries rise, which is what competition for scarce
+talent is supposed to do. The part that is not expected is where the curve peaks. The most
+expensive production in the league is not at the top.
+It is in the $15 to $30 million band, at $`r fmt(mid_price)` million per VORP, worse than
+the $30 to $50 million band and worse than the players earning more than $50 million.
+
+```{r}
+#| label: fig-tier
+#| fig-cap: "Dollars per point of VORP by salary band, for the full sample and for players who logged at least 1,500 minutes. Restricting to players who were available lowers every bar, and the shape survives."
+#| fig-width: 7.5
+#| fig-height: 3.8
+#| echo: false
+
+bind_rows(by_tier |> mutate(sample = "all players"),
+          by_tier_healthy |> mutate(sample = "1,500+ minutes")) |>
+  mutate(sample = fct_relevel(sample, "all players")) |>
+  ggplot(aes(tier, cost_per_vorp, fill = sample)) +
+  geom_col(position = position_dodge(width = 0.72), width = 0.66) +
+  geom_text(aes(label = paste0("$", fmt(cost_per_vorp), "M")),
+            position = position_dodge(width = 0.72),
+            vjust = -0.45, size = 2.9, colour = "grey25") +
+  scale_fill_manual(values = c("all players" = "#bdd7e7",
+                               "1,500+ minutes" = "#2c7fb8"), name = NULL) +
+  scale_y_continuous(labels = scales::label_dollar(suffix = "M"),
+                     expand = expansion(mult = c(0, 0.12))) +
+  labs(x = NULL, y = "cost per point of VORP") +
+  theme(legend.position = "top", panel.grid.major.x = element_blank())
+```
+
+Two forces produce that shape. At the top, the collective bargaining agreement caps what
+any individual can earn, so the best players in the league are structurally underpaid: the
+fitted line would put Shai Gilgeous-Alexander's production at about
+$`r fmt(analysis$market_value[analysis$player == "Shai Gilgeous-Alexander"] / 1e6, 0)`
+million, which no team is allowed to pay him. At the bottom, minimum and rookie scale
+contracts are set by rule rather than by bidding, and a young player who turns out to be
+good stays cheap for years.
+
+The $15 to $30 million band has neither protection. It is priced by open negotiation
+between teams with cap space and agents for players who were good enough to be paid but
+not good enough to be capped, and it is the one place in the market where teams routinely
+pay full price. Half the players in that band produced less than
+`r fmt(by_tier$median_vorp[by_tier$tier == "$15-30M"], 2)` VORP.
+
+The `1,500+ minutes` bars are a check on whether injuries drive this. They do not.
+Dropping to players who were available for most of the season cuts the cost of production
+everywhere, by a lot at the cheap end, and leaves the $15 to $30 million band still the
+most expensive in the league at $`r fmt(by_tier_healthy$cost_per_vorp[by_tier_healthy$tier == "$15-30M"])`
+million per VORP.
+
+## Positions are not priced consistently either
+
+```{r}
+#| label: fig-position
+#| fig-cap: "Cost of production by position group, using Basketball-Reference's listed position. Power forwards are the most expensive production in the league by a wide margin."
+#| fig-width: 7.5
+#| fig-height: 3.4
+#| echo: false
+
+by_position |>
+  mutate(pos_group = fct_reorder(pos_group, cost_per_vorp)) |>
+  ggplot(aes(cost_per_vorp, pos_group)) +
+  geom_col(fill = "#2c7fb8", width = 0.62) +
+  geom_text(aes(label = paste0("$", fmt(cost_per_vorp), "M per VORP  (n = ",
+                               players, ")")),
+            hjust = -0.06, size = 3, colour = "grey25") +
+  scale_x_continuous(labels = scales::label_dollar(suffix = "M"),
+                     expand = expansion(mult = c(0, 0.35))) +
+  labs(x = "cost per point of VORP", y = NULL) +
+  theme(panel.grid.major.y = element_blank())
+```
+
+Centers delivered production at $`r fmt(by_position$cost_per_vorp[by_position$pos_group == "Center"])`
+million per VORP and power forwards at $`r fmt(by_position$cost_per_vorp[by_position$pos_group == "Power forward"])`
+million, on median salaries of $`r fmt(by_position$median_salary[by_position$pos_group == "Center"])`
+million and $`r fmt(by_position$median_salary[by_position$pos_group == "Power forward"])`
+million. The ordering holds among high minute players too, where the same two groups come
+in at $`r fmt(by_pos_healthy$cost_per_vorp[by_pos_healthy$pos_group == "Center"])` million
+and $`r fmt(by_pos_healthy$cost_per_vorp[by_pos_healthy$pos_group == "Power forward"])`
+million.
+
+This is the finding I trust least, and the reason is the measure rather than the data.
+BPM is estimated from the box score, and rebounds and blocks are counted events while
+rotating onto a driver or holding a screen are not. Big men accumulate the former.
+Whether centers are genuinely underpriced or merely flattered by the statistic is not
+something three HTML tables can settle, and the honest version of the claim is narrower:
+if a front office evaluates players with public box score metrics, those metrics say the
+cheapest production available is at center and the most expensive is at power forward.
+
+## What a team should do with this
+
+For a team with cap space and no realistic path to a superstar, the ordering in @fig-tier
+says: spend at the extremes and stay out of the middle. Four players at $7 million who
+each produce half a point of VORP return twice what one player at $28 million producing a
+single point returns, for the same money, and the second option is the one teams keep
+choosing.
+
+The exception is worth stating clearly, because it is the reason smart teams still pay the
+top of the market. Roster spots are capped at 15 and minutes are capped at 240 a night, so
+production per dollar is not the only constraint that binds. A team that has already
+filled its roster with useful $7 million players cannot buy any more of them, and at that
+point the only way to add production is to pay for a player who supplies more of it per
+minute. Cheap production is the right way to build a roster from empty, not the right way
+to improve a good one.
+
+The injured contracts point the same direction from the other side. Haliburton, Lillard
+and Irving are owed roughly $124 million for 2026-27 with no production last season to
+price it against, and across every salary band in this sample, between 34 and 44 percent
+of players appeared in fewer than 60 games. Availability is not something only cheap
+players fail at. A roster whose production is spread across six moderately paid players
+absorbs one of those losses; a roster with $60 million in one player does not.
+
+So the recommendation for a budget-constrained team in October 2026 is narrow enough to
+act on. Fill the roster from the under $5 million market and from rookie scale contracts,
+where production costs a third of what it costs anywhere else. Refuse the $15 to $30
+million tier, where each point of VORP costs more than it does at the very top of the
+market. And if the front office is going to make one large commitment, make it at the
+position where the metrics say production is cheapest, not at the one where they say it is
+dearest.
+
+## The files
+
+Everything is regenerable from three cached HTML files. The scripts run in order and only
+the first touches the network.
+
+```
+blog/posts/post2/
+├── index.qmd
+├── R/
+│   ├── 00_config.R     paths, sources, constants, text helpers
+│   ├── 01_acquire.R    fetch -> data/raw/*.html + metadata.csv
+│   ├── 02_clean.R      parse -> data/derived/*.csv
+│   └── 03_analyze.R    price -> results/tables/*.csv
+├── data/
+│   ├── raw/            HTML snapshots + provenance record
+│   └── derived/        player_seasons, player_salaries, analysis_data
+├── results/tables/     the summary tables in this post
+└── docs/data_notes.md  sources, cleaning decisions, limitations
+```
+
+Source and cleaning details, the full list of validation checks, and what this data cannot
+support are in the [data notes](docs/data_notes.md). Statistics are from
+Basketball-Reference, accessed `r accessed`; salary figures are 2026-27 and production is
+from the 2025-26 season.

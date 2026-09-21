@@ -1,12 +1,5 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Junhao(Kyle)Tang",
-    "section": "",
-    "text": "Junhao(Kyle)Tang\nUniversity of Pennsylvaina\nWelcome to my personal website.\n\nQuick Links"
-  },
-  {
     "objectID": "bio.html",
     "href": "bio.html",
     "title": "About Me",
@@ -35,25 +28,74 @@
     "text": "Contact"
   },
   {
-    "objectID": "bio.html#studentemail.edu",
-    "href": "bio.html#studentemail.edu",
+    "objectID": "bio.html#junhaotsas.upenn.edu",
+    "href": "bio.html#junhaotsas.upenn.edu",
     "title": "About Me",
-    "section": "student@email.edu",
-    "text": "student@email.edu"
+    "section": "junhaot@sas.upenn.edu",
+    "text": "junhaot@sas.upenn.edu"
   },
   {
     "objectID": "blog/index.html",
     "href": "blog/index.html",
     "title": "Blog",
     "section": "",
-    "text": "The average that disagrees with all of its parts\n\n\nSimpson’s paradox, and why ratios refuse to add up\n\n\nBerkeley’s 1973 admissions gap disappears once you look at departments. The arithmetic behind that is simple, and it is a trap you can walk into with any pooled comparison.\n\n\n\n\n\nSep 12, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nMy Second Blog Post\n\n\n\n\n\n\n\n\n\n\n\nJun 16, 2026\n\n\n\n\n\nNo matching items"
+    "text": "Paying for wins\n\n\nScraping Basketball-Reference to find out what NBA production costs, and where it costs least\n\n\nThree pages of HTML, 348 players, and one question: if a team has $30 million to spend this October, which part of the market gives it the most production per dollar?\n\n\n\n\n\nSep 21, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nThe average that disagrees with all of its parts\n\n\nSimpson’s paradox, and why ratios refuse to add up\n\n\nBerkeley’s 1973 admissions gap disappears once you look at departments. The arithmetic behind that is simple, and it is a trap you can walk into with any pooled comparison.\n\n\n\n\n\nSep 12, 2026\n\n\nKyle Tong\n\n\n\n\n\nNo matching items"
   },
   {
-    "objectID": "blog/posts/post1/Untitled.html",
-    "href": "blog/posts/post1/Untitled.html",
-    "title": "My First Blog Post",
+    "objectID": "blog/posts/post2/docs/data_notes.html",
+    "href": "blog/posts/post2/docs/data_notes.html",
+    "title": "Data notes: Basketball-Reference salary and production scrape",
     "section": "",
-    "text": "This is my first blog post. Example \\(\\LaTeX\\) equation: \\(\\frac{1}{2}\\sum_{i=1}^nx_i\\)"
+    "text": "These notes accompany Paying for wins. They record where the data came from, what was done to it, and what it cannot support."
+  },
+  {
+    "objectID": "blog/posts/post2/docs/data_notes.html#sources",
+    "href": "blog/posts/post2/docs/data_notes.html#sources",
+    "title": "Data notes: Basketball-Reference salary and production scrape",
+    "section": "Sources",
+    "text": "Sources\nThree pages from Basketball-Reference, fetched once and cached as HTML snapshots in data/raw/:\n\n\n\n\n\n\n\n\nKey\nPage\nWhat it gives\n\n\n\n\nadvanced_2026\n/leagues/NBA_2026_advanced.html\n2025-26 advanced stats: minutes, PER, USG%, WS, WS/48, BPM, VORP\n\n\nadvanced_2025\n/leagues/NBA_2025_advanced.html\nthe same for 2024-25, used to stabilise one-season BPM\n\n\ncontracts\n/contracts/players.html\nsalary by season from 2026-27 through 2031-32, plus guaranteed money\n\n\n\nExact URLs, file sizes and access timestamps are in data/raw/metadata.csv, written by R/01_acquire.R at download time.\nBasketball-Reference has no public API for these tables and no bulk download of them, so scraping is the remaining structured option. robots.txt permits /leagues/ and /contracts/ for a generic user agent, disallows */gamelog/, */splits/, */on-off/, */lineups/ and */shooting/, none of which are touched here, and asks for Crawl-delay: 3. The acquisition script waits four seconds between requests, sends an identifying user agent with a contact address, and makes three requests in total. Re-runs read the cached snapshots unless called with --force.\nBasketball-Reference data are copyright Sports Reference LLC. Nothing here redistributes the underlying tables; the derived files are summary measures built for a class exercise."
+  },
+  {
+    "objectID": "blog/posts/post2/docs/data_notes.html#pipeline",
+    "href": "blog/posts/post2/docs/data_notes.html#pipeline",
+    "title": "Data notes: Basketball-Reference salary and production scrape",
+    "section": "Pipeline",
+    "text": "Pipeline\nR/00_config.R    paths, source list, constants, text helpers\nR/01_acquire.R   fetch -&gt; data/raw/*.html + metadata.csv\nR/02_clean.R     parse -&gt; data/derived/*.csv\nR/03_analyze.R   price -&gt; results/tables/*.csv\nindex.qmd        narrative, figures, tables\nEach script is runnable on its own with Rscript, in order. Only 01_acquire.R touches the network."
+  },
+  {
+    "objectID": "blog/posts/post2/docs/data_notes.html#cleaning-decisions",
+    "href": "blog/posts/post2/docs/data_notes.html#cleaning-decisions",
+    "title": "Data notes: Basketball-Reference salary and production scrape",
+    "section": "Cleaning decisions",
+    "text": "Cleaning decisions\nFootnote markers. Names on Basketball-Reference carry bracketed footnotes and, on some pages, asterisks for Hall of Fame members. clean_text() strips [...] and * before anything else looks at the string.\nTraded players. A player who changed teams mid-season appears once per team plus a combined 2TM or 3TM row, all sharing a rank. The combined row is kept and the partial rows dropped, so each player contributes one season.\nName matching. The stats pages and the contracts page are joined on the player name after transliterating accents (Jokić becomes Jokic), dropping periods and apostrophes, converting hyphens to spaces, removing generational suffixes, and lower-casing. 416 of 484 contracts matched a 2025-26 season, or 86 percent. The unmatched contracts are written to data/derived/unmatched_contracts.csv; they are overwhelmingly 2026 draft picks with no NBA minutes yet and players who missed all of last season, not name collisions.\nMinutes floor. The analysis sample keeps players with at least 500 minutes in 2025-26. Below that, rate statistics are too noisy to price.\nDuplicate contracts. If a name appears more than once on the contracts page, the larger 2026-27 figure is kept."
+  },
+  {
+    "objectID": "blog/posts/post2/docs/data_notes.html#validation",
+    "href": "blog/posts/post2/docs/data_notes.html#validation",
+    "title": "Data notes: Basketball-Reference salary and production scrape",
+    "section": "Validation",
+    "text": "Validation\nVORP on Basketball-Reference satisfies\n\\[\\text{VORP} = (\\text{BPM} + 2) \\times \\frac{\\text{MP}}{48 \\times 82},\\]\nso 02_clean.R recomputes it from the parsed BPM and minutes columns and stops if any player’s recomputed value differs from the scraped value by more than 0.15. This catches the common scraping failures at once: columns shifted by one, numbers parsed as text, header rows read as data. The script also checks that each snapshot contains the table it was fetched for, that the salary column parsed to positive numbers, that no player-season is duplicated, and that the match rate clears 75 percent."
+  },
+  {
+    "objectID": "blog/posts/post2/docs/data_notes.html#limitations",
+    "href": "blog/posts/post2/docs/data_notes.html#limitations",
+    "title": "Data notes: Basketball-Reference salary and production scrape",
+    "section": "Limitations",
+    "text": "Limitations\nThe production measure and the salary refer to different seasons. Salary is the 2026-27 figure; production is 2025-26, blended with 2024-25 at one-third weight. Players change between June and October, and a projection built this way will be wrong about the ones who change most.\nBPM and VORP are box-score estimates. They do not see defensive positioning, screening, gravity, or anything else that does not end in a counted event, and their positional adjustments are contested. The position comparison in the post is the finding most exposed to this.\nPlayers with no 2025-26 minutes are absent from the analysis, which removes the largest contracts belonging to injured stars. Any statement about the efficiency of the top of the market is conditional on having played.\nSalary is not the full cost of a roster spot. Luxury tax, apron restrictions, trade exceptions and the value of draft picks all change what a contract is worth to a team, and none of them are in this data."
+  },
+  {
+    "objectID": "blog/posts/post2/docs/data_notes.html#reuse",
+    "href": "blog/posts/post2/docs/data_notes.html#reuse",
+    "title": "Data notes: Basketball-Reference salary and production scrape",
+    "section": "Reuse",
+    "text": "Reuse\nRscript blog/posts/post2/R/01_acquire.R   # cached; add --force to re-download\nRscript blog/posts/post2/R/02_clean.R\nRscript blog/posts/post2/R/03_analyze.R"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Junhao(Kyle)Tang",
+    "section": "",
+    "text": "Junhao(Kyle)Tang\nUniversity of Pennsylvaina\nWelcome to my personal website.\n\nQuick Links"
   },
   {
     "objectID": "resume.html",
@@ -68,13 +110,6 @@
     "title": "Resume",
     "section": "Resume PDF",
     "text": "Resume PDF"
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
-    "section": "",
-    "text": "About this site\n\n1 + 1\n\n[1] 2"
   },
   {
     "objectID": "blog/posts/post1/index.html",
@@ -112,10 +147,80 @@
     "text": "Takeaway\nA pooled comparison is an average, and an average has weights. When two groups are averaged with different weights, the pooled numbers can point the opposite way from every group inside them. Before you read anything into a headline rate, find out what is being averaged and how the weights differ. The reversal is not a rare pathology; it is what happens whenever composition and outcome are related.\nAdmissions counts are UCBAdmissions in R’s datasets package, from Bickel, Hammel and O’Connell (1975), Science 187, 398–404."
   },
   {
-    "objectID": "bio.html#junhaotsas.upenn.edu",
-    "href": "bio.html#junhaotsas.upenn.edu",
-    "title": "About Me",
-    "section": "junhaot@sas.upenn.edu",
-    "text": "junhaot@sas.upenn.edu"
+    "objectID": "blog/posts/post2/index.html",
+    "href": "blog/posts/post2/index.html",
+    "title": "Paying for wins",
+    "section": "",
+    "text": "Suppose a team has $30 million of cap space to spend this October. Spread across players earning under $5 million a year, it buys about 3.9 points of VORP, going by what that part of the market produced last season. Spent on one player in the $15 to $30 million range, it buys about 1.5. Multiply by the 2.7 that Basketball-Reference uses to turn VORP into wins and the same $30 million is worth roughly 11 wins at one end of the market and 4 at the other.\nThat gap is the question this post is about. The data behind it sits in three HTML tables that anyone can read, so the first job is getting them into R."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#choosing-a-source-that-can-be-scraped",
+    "href": "blog/posts/post2/index.html#choosing-a-source-that-can-be-scraped",
+    "title": "Paying for wins",
+    "section": "Choosing a source that can be scraped",
+    "text": "Choosing a source that can be scraped\nBasketball-Reference publishes season statistics and contract tables as ordinary server rendered HTML. There is no public API for them and no bulk download, which puts this squarely in the last box of the acquisition decision tree: static HTML, no better structured alternative, collection permitted.\nPermitted matters. Their robots.txt blocks */gamelog/, */splits/, */on-off/, */lineups/ and */shooting/ for a generic user agent, leaves /leagues/ and /contracts/ open, and asks for a three second crawl delay. This project needs three pages, once:\n\n\n\n\nTable 1: The three pages behind everything below. Snapshots were taken once and cached.\n\n\n\n\n\n\n\n\n\n\n\n\nPage\nSaved as\nSize (MB)\nAccessed\n\n\n\n\n/leagues/NBA_2026_advanced.html\nbbref_advanced_2026.html\n2.18\n2026-09-20\n\n\n/leagues/NBA_2025_advanced.html\nbbref_advanced_2025.html\n2.17\n2026-09-20\n\n\n/contracts/players.html\nbbref_contracts_players.html\n0.52\n2026-09-20\n\n\n\n\n\n\n\n\nThree requests, four seconds apart, with a user agent that says who is asking and leaves an email address. The full acquisition script is in R/01_acquire.R; the part that does the work is short.\n\nfetch_snapshot &lt;- function(url, path, force = FALSE) {\n  if (file.exists(path) && !force) {\n    message(\"cached  \", basename(path))\n    return(invisible(FALSE))\n  }\n\n  Sys.sleep(CRAWL_DELAY)\n  resp &lt;- GET(url, user_agent(USER_AGENT), timeout(60))\n\n  if (status_code(resp) != 200) {\n    stop(\"request failed with status \", status_code(resp), \": \", url)\n  }\n\n  write_html(read_html(resp), path)\n  invisible(TRUE)\n}\n\nThe snapshot is the reason to separate downloading from parsing. Basketball-Reference redesigns its tables occasionally, and a selector that works today can return nothing next spring. With the HTML on disk, a broken parse is a bug I can fix against the exact page I saw, and re-running the analysis costs zero requests to their servers."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#getting-a-table-out-of-the-page",
+    "href": "blog/posts/post2/index.html#getting-a-table-out-of-the-page",
+    "title": "Paying for wins",
+    "section": "Getting a table out of the page",
+    "text": "Getting a table out of the page\nThe season table has the id advanced, so one selector finds it and html_table() does the rest.\n\npage &lt;- read_html(file.path(RAW_DIR, \"bbref_advanced_2026.html\"))\n\nadvanced &lt;- page |&gt;\n  html_element(\"#advanced\") |&gt;\n  html_table()\n\nSports Reference sites have a habit of burying secondary tables inside HTML comments, where html_element() cannot see them, and the workaround is worth keeping even when the page does not need it. find_table() in R/02_clean.R looks in the visible document first, then inside the comment nodes:\n\nfind_table &lt;- function(page, css) {\n  node &lt;- html_element(page, css)\n  if (!inherits(node, \"xml_missing\")) return(node)\n\n  commented &lt;- xml_find_all(page, \"//comment()\") |&gt;\n    xml_text() |&gt;\n    keep_containing(css)\n\n  if (length(commented) == 0) stop(\"no table matching \", css, \" in the snapshot\")\n  html_element(read_html(commented[[1]]), css)\n}\n\nWhat comes back is a data frame of strings, and two things in it are wrong in ways that would quietly corrupt the analysis. Names carry bracketed footnote markers, so Jokić[a] and Jokić are different players as far as a join is concerned. And a player traded mid-season gets one row per team plus a combined 2TM row, all sharing a rank, so James Harden appears three times and would be counted three times.\n\ncollapse_traded &lt;- function(df) {\n  df |&gt;\n    group_by(season, rk) |&gt;\n    mutate(traded = any(str_detect(team, \"^\\\\d+TM$\"))) |&gt;\n    filter(!traded | str_detect(team, \"^\\\\d+TM$\")) |&gt;\n    ungroup() |&gt;\n    select(-traded)\n}\n\nThe contracts page needs its own handling: it has a two-row header, so html_table() hands back the real column names as the first row of data, and every salary arrives as a string like $62,587,158 that parse_number() turns into a number."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#checking-that-the-parse-is-right",
+    "href": "blog/posts/post2/index.html#checking-that-the-parse-is-right",
+    "title": "Paying for wins",
+    "section": "Checking that the parse is right",
+    "text": "Checking that the parse is right\nA scrape that runs without error is not a scrape that worked. Columns shift, numbers come back as text, a repeated header row sneaks in as a player named “Player”. VORP happens to give a free way to test for all of that at once, because it is a deterministic function of two other columns on the same page:\n\\[\\text{VORP} = (\\text{BPM} + 2) \\times \\frac{\\text{MP}}{48 \\times 82}.\\]\nSo recompute it and compare:\n\ncheck &lt;- analysis |&gt;\n  mutate(vorp_hat = (bpm + 2) * mp / (48 * 82),\n         gap      = abs(vorp_hat - vorp))\n\nmax(check$gap)\n\n[1] 0.1224085\n\n\nThe largest disagreement across 348 players is rounding. Had a column been off by one, or had minutes been read as a character vector, this number would have been nonsense immediately."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#what-the-join-drops",
+    "href": "blog/posts/post2/index.html#what-the-join-drops",
+    "title": "Paying for wins",
+    "section": "What the join drops",
+    "text": "What the join drops\nProduction comes from the 2025-26 season; salary is the 2026-27 figure, because that is the money a team is actually committing now. Joining them on player name, after transliterating accents and dropping punctuation and generational suffixes, matched 416 of 484 contracts, or 86 percent. The misses are more interesting than the matches.\n\n\n\n\nTable 2: The five largest 2026-27 salaries with no 2025-26 season to price them against.\n\n\n\n\n\n\nPlayer\nTeam\n2026-27 salary\n\n\n\n\nTyrese Haliburton\nIND\n$48.9M\n\n\nKyrie Irving\nDAL\n$39.5M\n\n\nDamian Lillard\nMIL\n$35.9M\n\n\nFred VanVleet\nHOU\n$25.0M\n\n\nAJ Dybantsa\nWAS\n$14.7M\n\n\n\n\n\n\n\n\nNobody dropped out because of a spelling mismatch. The unmatched contracts are 2026 draft picks who have not played an NBA minute and veterans who missed last season hurt. Tyrese Haliburton, Damian Lillard and Kyrie Irving are owed roughly $124 million between them for a season none of them produced anything toward. That is a finding rather than a data problem, and I come back to it below.\nRequiring at least 500 minutes played leaves 348 players to work with. Below that, a rate statistic is mostly noise."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#the-price-of-production",
+    "href": "blog/posts/post2/index.html#the-price-of-production",
+    "title": "Paying for wins",
+    "section": "The price of production",
+    "text": "The price of production\nThe simplest way to ask what a unit of production costs is to regress salary on it. To reduce the noise in a single season of BPM, the production measure blends 2025-26 with 2024-25 at one-third weight and puts the blend back on the VORP scale at this season’s minutes.\n\nmarket_fit &lt;- lm(salary ~ proj_vorp, data = analysis)\ncoef(market_fit)\n\n(Intercept)   proj_vorp \n    9026331     6779867 \n\n\nThe slope says the market paid about $6.8 million for one point of VORP, which is roughly $2.5 million per win added. The intercept says a player who produced nothing at all still collected about $9.0 million, which is several times the veteran minimum and the first sign that the relationship is looser than it looks. R² is 0.36: production explains about a third of what players are paid.\n\n\n\n\n\n\n\n\nFigure 1: Every player with at least 500 minutes in 2025-26, priced against his 2026-27 salary. The line is the fitted market rate. Points well above it are cheap production; points well below it are expensive.\n\n\n\n\n\nVictor Wembanyama is the largest single piece of surplus in the league, producing at a level the market would charge about $47 million for while still on his rookie scale deal at $16.9 million. The other end of the chart is a list of maximum contracts attached to players who barely played."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#where-the-money-goes-to-die",
+    "href": "blog/posts/post2/index.html#where-the-money-goes-to-die",
+    "title": "Paying for wins",
+    "section": "Where the money goes to die",
+    "text": "Where the money goes to die\nSorting players into salary bands makes the pattern easier to read than the scatter does.\n\n\n\n\nTable 3: Cost of production by salary band. The last column is total salary divided by total positive VORP within the band.\n\n\n\n\n\n\nSalary band\nPlayers\nMedian salary\nMedian VORP\nCost per VORP\n\n\n\n\nUnder $5M\n111\n$2.6M\n0.10\n$7.7M\n\n\n$5-15M\n124\n$8.7M\n0.53\n$12.7M\n\n\n$15-30M\n55\n$20.2M\n1.01\n$19.6M\n\n\n$30-50M\n42\n$40.8M\n2.03\n$17.3M\n\n\nOver $50M\n16\n$57.1M\n2.84\n$18.0M\n\n\n\n\n\n\n\n\nProduction gets more expensive as salaries rise, which is what competition for scarce talent is supposed to do. The part that is not expected is where the curve peaks. The most expensive production in the league is not at the top. It is in the $15 to $30 million band, at $19.6 million per VORP, worse than the $30 to $50 million band and worse than the players earning more than $50 million.\n\n\n\n\n\n\n\n\nFigure 2: Dollars per point of VORP by salary band, for the full sample and for players who logged at least 1,500 minutes. Restricting to players who were available lowers every bar, and the shape survives.\n\n\n\n\n\nTwo forces produce that shape. At the top, the collective bargaining agreement caps what any individual can earn, so the best players in the league are structurally underpaid: the fitted line would put Shai Gilgeous-Alexander’s production at about $62 million, which no team is allowed to pay him. At the bottom, minimum and rookie scale contracts are set by rule rather than by bidding, and a young player who turns out to be good stays cheap for years.\nThe $15 to $30 million band has neither protection. It is priced by open negotiation between teams with cap space and agents for players who were good enough to be paid but not good enough to be capped, and it is the one place in the market where teams routinely pay full price. Half the players in that band produced less than 1.01 VORP.\nThe 1,500+ minutes bars are a check on whether injuries drive this. They do not. Dropping to players who were available for most of the season cuts the cost of production everywhere, by a lot at the cheap end, and leaves the $15 to $30 million band still the most expensive in the league at $16.4 million per VORP."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#positions-are-not-priced-consistently-either",
+    "href": "blog/posts/post2/index.html#positions-are-not-priced-consistently-either",
+    "title": "Paying for wins",
+    "section": "Positions are not priced consistently either",
+    "text": "Positions are not priced consistently either\n\n\n\n\n\n\n\n\nFigure 3: Cost of production by position group, using Basketball-Reference’s listed position. Power forwards are the most expensive production in the league by a wide margin.\n\n\n\n\n\nCenters delivered production at $11.7 million per VORP and power forwards at $22.1 million, on median salaries of $9.7 million and $10.4 million. The ordering holds among high minute players too, where the same two groups come in at $9.5 million and $18.3 million.\nThis is the finding I trust least, and the reason is the measure rather than the data. BPM is estimated from the box score, and rebounds and blocks are counted events while rotating onto a driver or holding a screen are not. Big men accumulate the former. Whether centers are genuinely underpriced or merely flattered by the statistic is not something three HTML tables can settle, and the honest version of the claim is narrower: if a front office evaluates players with public box score metrics, those metrics say the cheapest production available is at center and the most expensive is at power forward."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#what-a-team-should-do-with-this",
+    "href": "blog/posts/post2/index.html#what-a-team-should-do-with-this",
+    "title": "Paying for wins",
+    "section": "What a team should do with this",
+    "text": "What a team should do with this\nFor a team with cap space and no realistic path to a superstar, the ordering in Figure 2 says: spend at the extremes and stay out of the middle. Four players at $7 million who each produce half a point of VORP return twice what one player at $28 million producing a single point returns, for the same money, and the second option is the one teams keep choosing.\nThe exception is worth stating clearly, because it is the reason smart teams still pay the top of the market. Roster spots are capped at 15 and minutes are capped at 240 a night, so production per dollar is not the only constraint that binds. A team that has already filled its roster with useful $7 million players cannot buy any more of them, and at that point the only way to add production is to pay for a player who supplies more of it per minute. Cheap production is the right way to build a roster from empty, not the right way to improve a good one.\nThe injured contracts point the same direction from the other side. Haliburton, Lillard and Irving are owed roughly $124 million for 2026-27 with no production last season to price it against, and across every salary band in this sample, between 34 and 44 percent of players appeared in fewer than 60 games. Availability is not something only cheap players fail at. A roster whose production is spread across six moderately paid players absorbs one of those losses; a roster with $60 million in one player does not.\nSo the recommendation for a budget-constrained team in October 2026 is narrow enough to act on. Fill the roster from the under $5 million market and from rookie scale contracts, where production costs a third of what it costs anywhere else. Refuse the $15 to $30 million tier, where each point of VORP costs more than it does at the very top of the market. And if the front office is going to make one large commitment, make it at the position where the metrics say production is cheapest, not at the one where they say it is dearest."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#the-files",
+    "href": "blog/posts/post2/index.html#the-files",
+    "title": "Paying for wins",
+    "section": "The files",
+    "text": "The files\nEverything is regenerable from three cached HTML files. The scripts run in order and only the first touches the network.\nblog/posts/post2/\n├── index.qmd\n├── R/\n│   ├── 00_config.R     paths, sources, constants, text helpers\n│   ├── 01_acquire.R    fetch -&gt; data/raw/*.html + metadata.csv\n│   ├── 02_clean.R      parse -&gt; data/derived/*.csv\n│   └── 03_analyze.R    price -&gt; results/tables/*.csv\n├── data/\n│   ├── raw/            HTML snapshots + provenance record\n│   └── derived/        player_seasons, player_salaries, analysis_data\n├── results/tables/     the summary tables in this post\n└── docs/data_notes.md  sources, cleaning decisions, limitations\nSource and cleaning details, the full list of validation checks, and what this data cannot support are in the data notes. Statistics are from Basketball-Reference, accessed 2026-09-20; salary figures are 2026-27 and production is from the 2025-26 season."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site\n\n1 + 1\n\n[1] 2"
   }
 ]
