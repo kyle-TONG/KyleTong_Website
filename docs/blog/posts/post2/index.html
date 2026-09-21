@@ -8,7 +8,7 @@
 
 <meta name="author" content="Kyle Tong">
 <meta name="dcterms.date" content="2026-09-21">
-<meta name="description" content="Three pages of HTML, 348 players, and one question: if a team has $30 million to spend this October, which part of the market gives it the most production per dollar?">
+<meta name="description" content="Scraping Basketball-Reference salaries and production to find out which part of the market sells a win cheapest. It is not the part teams spend most in.">
 
 <title>Paying for wins – Student Name</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Paying for wins</h1>
-<p class="subtitle lead">Scraping Basketball-Reference to find out what NBA production costs, and where it costs least</p>
+<p class="subtitle lead">Two web pages, 348 players, and the worst place in the NBA to spend money</p>
   <div class="quarto-categories">
     <div class="quarto-category">web scraping</div>
     <div class="quarto-category">rvest</div>
@@ -203,7 +203,7 @@ window.Quarto = {
 
 <div>
   <div class="description">
-    Three pages of HTML, 348 players, and one question: if a team has $30 million to spend this October, which part of the market gives it the most production per dollar?
+    Scraping Basketball-Reference salaries and production to find out which part of the market sells a win cheapest. It is not the part teams spend most in.
   </div>
 </div>
 
@@ -232,344 +232,47 @@ window.Quarto = {
 </header>
 
 
-<p>Suppose a team has $30 million of cap space to spend this October. Spread across players earning under $5 million a year, it buys about 3.9 points of VORP, going by what that part of the market produced last season. Spent on one player in the $15 to $30 million range, it buys about 1.5. Multiply by the 2.7 that Basketball-Reference uses to turn VORP into wins and the same $30 million is worth roughly 11 wins at one end of the market and 4 at the other.</p>
-<p>That gap is the question this post is about. The data behind it sits in three HTML tables that anyone can read, so the first job is getting them into R.</p>
-<section id="choosing-a-source-that-can-be-scraped" class="level2">
-<h2 class="anchored" data-anchor-id="choosing-a-source-that-can-be-scraped">Choosing a source that can be scraped</h2>
-<p>Basketball-Reference publishes season statistics and contract tables as ordinary server rendered HTML. There is no public API for them and no bulk download, which puts this squarely in the last box of the acquisition decision tree: static HTML, no better structured alternative, collection permitted.</p>
-<p>Permitted matters. Their <code>robots.txt</code> blocks <code>*/gamelog/</code>, <code>*/splits/</code>, <code>*/on-off/</code>, <code>*/lineups/</code> and <code>*/shooting/</code> for a generic user agent, leaves <code>/leagues/</code> and <code>/contracts/</code> open, and asks for a three second crawl delay. This project needs three pages, once:</p>
+<p>A team with $30 million of cap space this October can buy about 4.2 points of VORP with it, or about 1.5, depending entirely on which part of the salary market it shops in. VORP is Basketball-Reference’s value over replacement player, and multiplying by 2.7 turns it into wins, so the gap between those two numbers is about 7 wins for the same money.</p>
+<section id="getting-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="getting-the-data">Getting the data</h2>
+<p>Basketball-Reference publishes last season’s player statistics and next season’s contracts as ordinary HTML tables. There is no API and no bulk download for them, which is what puts this in scraping territory. Their <code>robots.txt</code> blocks game logs, splits and lineups but leaves <code>/leagues/</code> and <code>/contracts/</code> open, and asks for a three second crawl delay, so the acquisition script sends two requests four seconds apart, identifies itself in the user agent, and saves the HTML to disk.</p>
 <div class="cell">
-<div id="tbl-sources" class="cell quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-sources-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;1: The three pages behind everything below. Snapshots were taken once and cached.
-</figcaption>
-<div aria-describedby="tbl-sources-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output-display">
-<table class="cell caption-top table table-sm table-striped small">
-<colgroup>
-<col style="width: 39%">
-<col style="width: 35%">
-<col style="width: 12%">
-<col style="width: 13%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Page</th>
-<th style="text-align: left;">Saved as</th>
-<th style="text-align: right;">Size (MB)</th>
-<th style="text-align: right;">Accessed</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">/leagues/NBA_2026_advanced.html</td>
-<td style="text-align: left;">bbref_advanced_2026.html</td>
-<td style="text-align: right;">2.18</td>
-<td style="text-align: right;">2026-09-20</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">/leagues/NBA_2025_advanced.html</td>
-<td style="text-align: left;">bbref_advanced_2025.html</td>
-<td style="text-align: right;">2.17</td>
-<td style="text-align: right;">2026-09-20</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">/contracts/players.html</td>
-<td style="text-align: left;">bbref_contracts_players.html</td>
-<td style="text-align: right;">0.52</td>
-<td style="text-align: right;">2026-09-20</td>
-</tr>
-</tbody>
-</table>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>page <span class="ot">&lt;-</span> <span class="fu">read_html</span>(<span class="st">"https://www.basketball-reference.com/leagues/NBA_2026_advanced.html"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>xml2<span class="sc">::</span><span class="fu">write_html</span>(page, <span class="st">"data/raw/bbref_advanced_2026.html"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>advanced <span class="ot">&lt;-</span> page <span class="sc">|&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">html_element</span>(<span class="st">"#advanced"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">html_table</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-</div>
-</figure>
-</div>
-</div>
-<p>Three requests, four seconds apart, with a user agent that says who is asking and leaves an email address. The full acquisition script is in <code>R/01_acquire.R</code>; the part that does the work is short.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>fetch_snapshot <span class="ot">&lt;-</span> <span class="cf">function</span>(url, path, <span class="at">force =</span> <span class="cn">FALSE</span>) {</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">file.exists</span>(path) <span class="sc">&amp;&amp;</span> <span class="sc">!</span>force) {</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">message</span>(<span class="st">"cached  "</span>, <span class="fu">basename</span>(path))</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">invisible</span>(<span class="cn">FALSE</span>))</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Sys.sleep</span>(CRAWL_DELAY)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  resp <span class="ot">&lt;-</span> <span class="fu">GET</span>(url, <span class="fu">user_agent</span>(USER_AGENT), <span class="fu">timeout</span>(<span class="dv">60</span>))</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">status_code</span>(resp) <span class="sc">!=</span> <span class="dv">200</span>) {</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"request failed with status "</span>, <span class="fu">status_code</span>(resp), <span class="st">": "</span>, url)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write_html</span>(<span class="fu">read_html</span>(resp), path)</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="cn">TRUE</span>)</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>The snapshot is the reason to separate downloading from parsing. Basketball-Reference redesigns its tables occasionally, and a selector that works today can return nothing next spring. With the HTML on disk, a broken parse is a bug I can fix against the exact page I saw, and re-running the analysis costs zero requests to their servers.</p>
+<p>Saving the snapshot matters more than it looks. Every later step parses the local file, so fixing a bug costs zero additional requests, and if the site redesigns its tables next spring the analysis still runs against the page I actually saw.</p>
+<p>Two things in the parsed tables would have quietly corrupted the result. Player names carry bracketed footnote markers, so <code>Jokić[a]</code> and <code>Jokić</code> fail to join. And a player traded mid-season gets one row per team plus a combined <code>2TM</code> row, all sharing a rank, so James Harden appears three times unless the partial rows are dropped. Salaries arrive as strings like <code>$62,587,158</code>, which <code>parse_number()</code> handles.</p>
+<p>Because VORP is a fixed function of two other scraped columns, <span class="math inline">\((\text{BPM} + 2) \times \text{MP} / (48 \times 82)\)</span>, recomputing it is a free test of the whole parse. Across 348 players the largest disagreement is rounding, which rules out shifted columns and numbers read as text.</p>
 </section>
-<section id="getting-a-table-out-of-the-page" class="level2">
-<h2 class="anchored" data-anchor-id="getting-a-table-out-of-the-page">Getting a table out of the page</h2>
-<p>The season table has the id <code>advanced</code>, so one selector finds it and <code>html_table()</code> does the rest.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>page <span class="ot">&lt;-</span> <span class="fu">read_html</span>(<span class="fu">file.path</span>(RAW_DIR, <span class="st">"bbref_advanced_2026.html"</span>))</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>advanced <span class="ot">&lt;-</span> page <span class="sc">|&gt;</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">html_element</span>(<span class="st">"#advanced"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">html_table</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>Sports Reference sites have a habit of burying secondary tables inside HTML comments, where <code>html_element()</code> cannot see them, and the workaround is worth keeping even when the page does not need it. <code>find_table()</code> in <code>R/02_clean.R</code> looks in the visible document first, then inside the comment nodes:</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>find_table <span class="ot">&lt;-</span> <span class="cf">function</span>(page, css) {</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  node <span class="ot">&lt;-</span> <span class="fu">html_element</span>(page, css)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">inherits</span>(node, <span class="st">"xml_missing"</span>)) <span class="fu">return</span>(node)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  commented <span class="ot">&lt;-</span> <span class="fu">xml_find_all</span>(page, <span class="st">"//comment()"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">xml_text</span>() <span class="sc">|&gt;</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">keep_containing</span>(css)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(commented) <span class="sc">==</span> <span class="dv">0</span>) <span class="fu">stop</span>(<span class="st">"no table matching "</span>, css, <span class="st">" in the snapshot"</span>)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">html_element</span>(<span class="fu">read_html</span>(commented[[<span class="dv">1</span>]]), css)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>What comes back is a data frame of strings, and two things in it are wrong in ways that would quietly corrupt the analysis. Names carry bracketed footnote markers, so <code>Jokić[a]</code> and <code>Jokić</code> are different players as far as a join is concerned. And a player traded mid-season gets one row per team plus a combined <code>2TM</code> row, all sharing a rank, so James Harden appears three times and would be counted three times.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>collapse_traded <span class="ot">&lt;-</span> <span class="cf">function</span>(df) {</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">|&gt;</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(season, rk) <span class="sc">|&gt;</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">traded =</span> <span class="fu">any</span>(<span class="fu">str_detect</span>(team, <span class="st">"^</span><span class="sc">\\</span><span class="st">d+TM$"</span>))) <span class="sc">|&gt;</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span>traded <span class="sc">|</span> <span class="fu">str_detect</span>(team, <span class="st">"^</span><span class="sc">\\</span><span class="st">d+TM$"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>traded)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>The contracts page needs its own handling: it has a two-row header, so <code>html_table()</code> hands back the real column names as the first row of data, and every salary arrives as a string like <code>$62,587,158</code> that <code>parse_number()</code> turns into a number.</p>
-</section>
-<section id="checking-that-the-parse-is-right" class="level2">
-<h2 class="anchored" data-anchor-id="checking-that-the-parse-is-right">Checking that the parse is right</h2>
-<p>A scrape that runs without error is not a scrape that worked. Columns shift, numbers come back as text, a repeated header row sneaks in as a player named “Player”. VORP happens to give a free way to test for all of that at once, because it is a deterministic function of two other columns on the same page:</p>
-<p><span class="math display">\[\text{VORP} = (\text{BPM} + 2) \times \frac{\text{MP}}{48 \times 82}.\]</span></p>
-<p>So recompute it and compare:</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>check <span class="ot">&lt;-</span> analysis <span class="sc">|&gt;</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">vorp_hat =</span> (bpm <span class="sc">+</span> <span class="dv">2</span>) <span class="sc">*</span> mp <span class="sc">/</span> (<span class="dv">48</span> <span class="sc">*</span> <span class="dv">82</span>),</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">gap      =</span> <span class="fu">abs</span>(vorp_hat <span class="sc">-</span> vorp))</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">max</span>(check<span class="sc">$</span>gap)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.1224085</code></pre>
-</div>
-</div>
-<p>The largest disagreement across 348 players is rounding. Had a column been off by one, or had minutes been read as a character vector, this number would have been nonsense immediately.</p>
-</section>
-<section id="what-the-join-drops" class="level2">
-<h2 class="anchored" data-anchor-id="what-the-join-drops">What the join drops</h2>
-<p>Production comes from the 2025-26 season; salary is the 2026-27 figure, because that is the money a team is actually committing now. Joining them on player name, after transliterating accents and dropping punctuation and generational suffixes, matched 416 of 484 contracts, or 86 percent. The misses are more interesting than the matches.</p>
-<div class="cell">
-<div id="tbl-unmatched" class="cell quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-unmatched-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;2: The five largest 2026-27 salaries with no 2025-26 season to price them against.
-</figcaption>
-<div aria-describedby="tbl-unmatched-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output-display">
-<table class="cell caption-top table table-sm table-striped small">
-<thead>
-<tr class="header">
-<th style="text-align: left;">Player</th>
-<th style="text-align: left;">Team</th>
-<th style="text-align: right;">2026-27 salary</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">Tyrese Haliburton</td>
-<td style="text-align: left;">IND</td>
-<td style="text-align: right;">$48.9M</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Kyrie Irving</td>
-<td style="text-align: left;">DAL</td>
-<td style="text-align: right;">$39.5M</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Damian Lillard</td>
-<td style="text-align: left;">MIL</td>
-<td style="text-align: right;">$35.9M</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Fred VanVleet</td>
-<td style="text-align: left;">HOU</td>
-<td style="text-align: right;">$25.0M</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">AJ Dybantsa</td>
-<td style="text-align: left;">WAS</td>
-<td style="text-align: right;">$14.7M</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</figure>
-</div>
-</div>
-<p>Nobody dropped out because of a spelling mismatch. The unmatched contracts are 2026 draft picks who have not played an NBA minute and veterans who missed last season hurt. Tyrese Haliburton, Damian Lillard and Kyrie Irving are owed roughly $124 million between them for a season none of them produced anything toward. That is a finding rather than a data problem, and I come back to it below.</p>
-<p>Requiring at least 500 minutes played leaves 348 players to work with. Below that, a rate statistic is mostly noise.</p>
-</section>
-<section id="the-price-of-production" class="level2">
-<h2 class="anchored" data-anchor-id="the-price-of-production">The price of production</h2>
-<p>The simplest way to ask what a unit of production costs is to regress salary on it. To reduce the noise in a single season of BPM, the production measure blends 2025-26 with 2024-25 at one-third weight and puts the blend back on the VORP scale at this season’s minutes.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>market_fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(salary <span class="sc">~</span> proj_vorp, <span class="at">data =</span> analysis)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(market_fit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>(Intercept)   proj_vorp 
-    9026331     6779867 </code></pre>
-</div>
-</div>
-<p>The slope says the market paid about $6.8 million for one point of VORP, which is roughly $2.5 million per win added. The intercept says a player who produced nothing at all still collected about $9.0 million, which is several times the veteran minimum and the first sign that the relationship is looser than it looks. R² is 0.36: production explains about a third of what players are paid.</p>
+<section id="what-production-costs" class="level2">
+<h2 class="anchored" data-anchor-id="what-production-costs">What production costs</h2>
+<p>Joining production to salary on player name matched 86 percent of contracts. The misses are not spelling errors: they are 2026 draft picks with no NBA minutes and stars who missed all of last season hurt, which is worth remembering when reading anything below about the top of the market.</p>
 <div class="cell">
 <div class="cell-output-display">
-<div id="fig-scatter" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-cost" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-scatter-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/fig-scatter-1.png" class="img-fluid figure-img" width="720">
+<div aria-describedby="fig-cost-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-cost-1.png" class="img-fluid figure-img" width="672">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-scatter-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: Every player with at least 500 minutes in 2025-26, priced against his 2026-27 salary. The line is the fitted market rate. Points well above it are cheap production; points well below it are expensive.
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cost-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Total salary divided by total positive VORP, within each salary band. Players with at least 500 minutes in 2025-26, priced against their 2026-27 salary.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>Victor Wembanyama is the largest single piece of surplus in the league, producing at a level the market would charge about $47 million for while still on his rookie scale deal at $16.9 million. The other end of the chart is a list of maximum contracts attached to players who barely played.</p>
+<p>Production gets more expensive as salaries rise, which is what competition for scarce talent is supposed to do. The surprise is where the line stops rising. The most expensive production in the league is not at the top: it is in the $15 to $30 million band, at $19.9 million per point, above the $17.3 million that players earning more than $30 million cost.</p>
+<p>Two rules explain the shape. At the top, the collective bargaining agreement caps individual salaries, so the best players in the league cannot be paid what they are worth. At the bottom, minimum and rookie scale contracts are set by rule rather than by bidding, and a young player who turns out to be good stays cheap for years. The $15 to $30 million band has neither protection. It is priced by open negotiation for players good enough to be paid but not good enough to be capped, and it is the one place where teams routinely pay full price.</p>
 </section>
-<section id="where-the-money-goes-to-die" class="level2">
-<h2 class="anchored" data-anchor-id="where-the-money-goes-to-die">Where the money goes to die</h2>
-<p>Sorting players into salary bands makes the pattern easier to read than the scatter does.</p>
-<div class="cell">
-<div id="tbl-tier" class="cell quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-tier-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;3: Cost of production by salary band. The last column is total salary divided by total positive VORP within the band.
-</figcaption>
-<div aria-describedby="tbl-tier-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output-display">
-<table class="cell caption-top table table-sm table-striped small">
-<thead>
-<tr class="header">
-<th style="text-align: left;">Salary band</th>
-<th style="text-align: right;">Players</th>
-<th style="text-align: right;">Median salary</th>
-<th style="text-align: right;">Median VORP</th>
-<th style="text-align: right;">Cost per VORP</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">Under $5M</td>
-<td style="text-align: right;">111</td>
-<td style="text-align: right;">$2.6M</td>
-<td style="text-align: right;">0.10</td>
-<td style="text-align: right;">$7.7M</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">$5-15M</td>
-<td style="text-align: right;">124</td>
-<td style="text-align: right;">$8.7M</td>
-<td style="text-align: right;">0.53</td>
-<td style="text-align: right;">$12.7M</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">$15-30M</td>
-<td style="text-align: right;">55</td>
-<td style="text-align: right;">$20.2M</td>
-<td style="text-align: right;">1.01</td>
-<td style="text-align: right;">$19.6M</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">$30-50M</td>
-<td style="text-align: right;">42</td>
-<td style="text-align: right;">$40.8M</td>
-<td style="text-align: right;">2.03</td>
-<td style="text-align: right;">$17.3M</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Over $50M</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: right;">$57.1M</td>
-<td style="text-align: right;">2.84</td>
-<td style="text-align: right;">$18.0M</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</figure>
-</div>
-</div>
-<p>Production gets more expensive as salaries rise, which is what competition for scarce talent is supposed to do. The part that is not expected is where the curve peaks. The most expensive production in the league is not at the top. It is in the $15 to $30 million band, at $19.6 million per VORP, worse than the $30 to $50 million band and worse than the players earning more than $50 million.</p>
-<div class="cell">
-<div class="cell-output-display">
-<div id="fig-tier" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-tier-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/fig-tier-1.png" class="img-fluid figure-img" width="720">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-tier-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: Dollars per point of VORP by salary band, for the full sample and for players who logged at least 1,500 minutes. Restricting to players who were available lowers every bar, and the shape survives.
-</figcaption>
-</figure>
-</div>
-</div>
-</div>
-<p>Two forces produce that shape. At the top, the collective bargaining agreement caps what any individual can earn, so the best players in the league are structurally underpaid: the fitted line would put Shai Gilgeous-Alexander’s production at about $62 million, which no team is allowed to pay him. At the bottom, minimum and rookie scale contracts are set by rule rather than by bidding, and a young player who turns out to be good stays cheap for years.</p>
-<p>The $15 to $30 million band has neither protection. It is priced by open negotiation between teams with cap space and agents for players who were good enough to be paid but not good enough to be capped, and it is the one place in the market where teams routinely pay full price. Half the players in that band produced less than 1.01 VORP.</p>
-<p>The <code>1,500+ minutes</code> bars are a check on whether injuries drive this. They do not. Dropping to players who were available for most of the season cuts the cost of production everywhere, by a lot at the cheap end, and leaves the $15 to $30 million band still the most expensive in the league at $16.4 million per VORP.</p>
-</section>
-<section id="positions-are-not-priced-consistently-either" class="level2">
-<h2 class="anchored" data-anchor-id="positions-are-not-priced-consistently-either">Positions are not priced consistently either</h2>
-<div class="cell">
-<div class="cell-output-display">
-<div id="fig-position" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-position-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="index_files/figure-html/fig-position-1.png" class="img-fluid figure-img" width="720">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-position-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: Cost of production by position group, using Basketball-Reference’s listed position. Power forwards are the most expensive production in the league by a wide margin.
-</figcaption>
-</figure>
-</div>
-</div>
-</div>
-<p>Centers delivered production at $11.7 million per VORP and power forwards at $22.1 million, on median salaries of $9.7 million and $10.4 million. The ordering holds among high minute players too, where the same two groups come in at $9.5 million and $18.3 million.</p>
-<p>This is the finding I trust least, and the reason is the measure rather than the data. BPM is estimated from the box score, and rebounds and blocks are counted events while rotating onto a driver or holding a screen are not. Big men accumulate the former. Whether centers are genuinely underpriced or merely flattered by the statistic is not something three HTML tables can settle, and the honest version of the claim is narrower: if a front office evaluates players with public box score metrics, those metrics say the cheapest production available is at center and the most expensive is at power forward.</p>
-</section>
-<section id="what-a-team-should-do-with-this" class="level2">
-<h2 class="anchored" data-anchor-id="what-a-team-should-do-with-this">What a team should do with this</h2>
-<p>For a team with cap space and no realistic path to a superstar, the ordering in <a href="#fig-tier" class="quarto-xref">Figure&nbsp;2</a> says: spend at the extremes and stay out of the middle. Four players at $7 million who each produce half a point of VORP return twice what one player at $28 million producing a single point returns, for the same money, and the second option is the one teams keep choosing.</p>
-<p>The exception is worth stating clearly, because it is the reason smart teams still pay the top of the market. Roster spots are capped at 15 and minutes are capped at 240 a night, so production per dollar is not the only constraint that binds. A team that has already filled its roster with useful $7 million players cannot buy any more of them, and at that point the only way to add production is to pay for a player who supplies more of it per minute. Cheap production is the right way to build a roster from empty, not the right way to improve a good one.</p>
-<p>The injured contracts point the same direction from the other side. Haliburton, Lillard and Irving are owed roughly $124 million for 2026-27 with no production last season to price it against, and across every salary band in this sample, between 34 and 44 percent of players appeared in fewer than 60 games. Availability is not something only cheap players fail at. A roster whose production is spread across six moderately paid players absorbs one of those losses; a roster with $60 million in one player does not.</p>
-<p>So the recommendation for a budget-constrained team in October 2026 is narrow enough to act on. Fill the roster from the under $5 million market and from rookie scale contracts, where production costs a third of what it costs anywhere else. Refuse the $15 to $30 million tier, where each point of VORP costs more than it does at the very top of the market. And if the front office is going to make one large commitment, make it at the position where the metrics say production is cheapest, not at the one where they say it is dearest.</p>
-</section>
-<section id="the-files" class="level2">
-<h2 class="anchored" data-anchor-id="the-files">The files</h2>
-<p>Everything is regenerable from three cached HTML files. The scripts run in order and only the first touches the network.</p>
-<pre><code>blog/posts/post2/
-├── index.qmd
-├── R/
-│   ├── 00_config.R     paths, sources, constants, text helpers
-│   ├── 01_acquire.R    fetch -&gt; data/raw/*.html + metadata.csv
-│   ├── 02_clean.R      parse -&gt; data/derived/*.csv
-│   └── 03_analyze.R    price -&gt; results/tables/*.csv
-├── data/
-│   ├── raw/            HTML snapshots + provenance record
-│   └── derived/        player_seasons, player_salaries, analysis_data
-├── results/tables/     the summary tables in this post
-└── docs/data_notes.md  sources, cleaning decisions, limitations</code></pre>
-<p>Source and cleaning details, the full list of validation checks, and what this data cannot support are in the <a href="../../../blog/posts/post2/docs/data_notes.html">data notes</a>. Statistics are from Basketball-Reference, accessed 2026-09-20; salary figures are 2026-27 and production is from the 2025-26 season.</p>
+<section id="what-to-do-with-that" class="level2">
+<h2 class="anchored" data-anchor-id="what-to-do-with-that">What to do with that</h2>
+<p>For a team with cap space and no path to a superstar, the advice is to spend at the extremes and stay out of the middle. Four players at $7 million who each produce half a point of VORP return twice what one player at $28 million producing a single point does, for the same money. The limit is the roster: 15 spots and 240 minutes a night, so a team that already has useful cheap players cannot simply buy more of them, and improving a good roster does eventually require paying for production per minute rather than per dollar.</p>
+<p>Two caveats. VORP is a box score estimate and misses everything that does not end in a counted event, and the salary is for next season while the production is from last season, which will be wrong about exactly the players who change most.</p>
+<p>Both scripts are in <code>R/</code>, the raw HTML snapshots and a provenance record in <code>data/raw/</code>, and the tidy file behind the chart in <code>data/derived/</code>. Only <code>01_acquire.R</code> touches the network. Data from Basketball-Reference, accessed 20 September 2026.</p>
 
 
 </section>

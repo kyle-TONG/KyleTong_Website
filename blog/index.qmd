@@ -2,7 +2,7 @@
 title: "Blog"
 
 listing:
-  contents: posts/*/index.qmd
+  contents: posts
   sort: "date desc"
   type: default
 ---

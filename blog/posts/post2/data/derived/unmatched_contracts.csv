@@ -1,69 +1,69 @@
-player,team,salary,guaranteed,years_left,player_key
-Tyrese Haliburton,IND,48924624,156896208,3,tyrese haliburton
-Kyrie Irving,DAL,39491282,39491282,2,kyrie irving
-Damian Lillard,MIL,35915403,90066412,4,damian lillard
-Fred VanVleet,HOU,25000000,25000000,1,fred vanvleet
-AJ Dybantsa,WAS,14748000,30233760,4,aj dybantsa
-Darryn Peterson,UTA,13195320,27050640,4,darryn peterson
-Cameron Boozer,MEM,11849760,24291600,4,cameron boozer
-Caleb Wilson,CHI,10683720,21901680,4,caleb wilson
-Keaton Wagler,LAC,9674760,19833000,4,keaton wagler
-Mikel Brown Jr.,BRK,8787000,18013440,4,mikel brown
-Darius Acuff Jr.,SAC,8021640,16444560,4,darius acuff
-Kingston Flemings,ATL,7348680,15064800,4,kingston flemings
-Morez Johnson Jr.,DAL,6754800,13847880,4,morez johnson
-Brayden Burries,MIL,6417360,13155360,4,brayden burries
-Yaxel Lendeborg,GSW,6096240,12497520,4,yaxel lendeborg
-Aday Mara,OKC,5791680,11873160,4,aday mara
-Nate Ament,MIL,5502000,11279280,4,nate ament
-Hannes Steinbach,CHO,5227200,10715760,4,hannes steinbach
-Dailyn Swain,CHI,4965480,10179240,4,dailyn swain
-Thomas Sorber,OKC,4887720,4887720,3,thomas sorber
-Bennett Stirtz,OKC,4717320,9670560,4,bennett stirtz
-Ebuka Okorie,DET,4481280,9186720,4,ebuka okorie
-Christian Anderson Jr.,CHO,4257480,8727480,4,christian anderson
-Allen Graves,TOR,4065720,8334600,4,allen graves
-Jayden Quaintance,SAS,3902760,8000640,4,jayden quaintance
-Karim López,MEM,3746760,7681080,4,karim lopez
-Labaron Philon Jr.,PHI,3597120,7373880,4,labaron philon
-Zuby Ejiofor,ATL,3453360,7079520,4,zuby ejiofor
-Cameron Carr,LAL,3315360,6796440,4,cameron carr
-Lonnie Walker IV,DEN,3286399,NA,1,lonnie walker
-Sergio de Larrea,DAL,3182280,6523560,4,sergio de larrea
-Nassir Little,PHO,3107143,9321429,3,nassir little
-Tarris Reed Jr.,SAS,3076920,6307440,4,tarris reed
-Tarik Biberovic,DAL,3000000,3000000,2,tarik biberovic
-Chris Cenac Jr.,BOS,2988120,6125760,4,chris cenac
-Joshua Jefferson,BRK,2969520,6088080,4,joshua jefferson
-Alex Karaban,SAC,2948280,6043920,4,alex karaban
-Koa Peat,PHO,2926800,5999880,4,koa peat
-Ben Simmons,SAC,2449421,NA,1,ben simmons
-Georges Niang,GSW,2449421,NA,1,georges niang
-John Butler,MIL,2449421,NA,1,john butler
-Mario Hezonja,CLE,2449421,2449421,1,mario hezonja
-Trey Lyles,MIN,2449421,2449421,1,trey lyles
-JaVale McGee,DAL,2208856,4417712,2,javale mcgee
-Alex Toohey,GSW,2185116,NA,1,alex toohey
-Baba Miller,LAC,1705630,4000000,4,baba miller
-Bogoljub Markovic,MIL,1357763,6346496,4,bogoljub markovic
-Bruce Thornton,HOU,1357763,1357763,4,bruce thornton
-Christoph Tilly,OKC,1357763,NA,1,christoph tilly
-Emanuel Sharp,SAC,1357763,3652133,3,emanuel sharp
-Henri Veesaar,ATL,1357763,3652133,4,henri veesaar
-Isaiah Evans,MIN,1357763,6346496,4,isaiah evans
-Jameer Nelson Jr.,PHI,1357763,NA,1,jameer nelson
-J'Vonne Hadley,MIA,1357763,NA,1,jvonne hadley
-Khalifa Diop,CLE,1357763,1357763,4,khalifa diop
-Meleek Thomas,CLE,1357763,6346496,4,meleek thomas
-Milos Uzan,BOS,1357763,NA,1,milos uzan
-Nate Bittle,TOR,1357763,NA,1,nate bittle
-Ryan Conwell,MIA,1357763,3652133,3,ryan conwell
-Saint Thomas,PHI,1357763,NA,1,saint thomas
-Tacko Fall,PHI,1357763,NA,1,tacko fall
-Trevon Brazile,DEN,1357763,1357763,1,trevon brazile
-Tucker DeVries,BOS,1357763,NA,1,tucker devries
-Will Baker,ATL,1357763,NA,1,will baker
-Vasilije Micić,MIL,666667,1333334,2,vasilije micic
-Mamadi Diakite,MEM,464050,464050,1,mamadi diakite
-Ricky Rubio,CLE,424672,424672,1,ricky rubio
-Didi Louzada,POR,268032,804096,3,didi louzada
+player,salary,key
+Tyrese Haliburton,48924624,tyrese haliburton
+Kyrie Irving,39491282,kyrie irving
+Damian Lillard,35915403,damian lillard
+Fred VanVleet,25000000,fred vanvleet
+AJ Dybantsa,14748000,aj dybantsa
+Darryn Peterson,13195320,darryn peterson
+Cameron Boozer,11849760,cameron boozer
+Caleb Wilson,10683720,caleb wilson
+Keaton Wagler,9674760,keaton wagler
+Mikel Brown Jr.,8787000,mikel brown
+Darius Acuff Jr.,8021640,darius acuff
+Kingston Flemings,7348680,kingston flemings
+Morez Johnson Jr.,6754800,morez johnson
+Brayden Burries,6417360,brayden burries
+Yaxel Lendeborg,6096240,yaxel lendeborg
+Aday Mara,5791680,aday mara
+Nate Ament,5502000,nate ament
+Hannes Steinbach,5227200,hannes steinbach
+Dailyn Swain,4965480,dailyn swain
+Thomas Sorber,4887720,thomas sorber
+Bennett Stirtz,4717320,bennett stirtz
+Ebuka Okorie,4481280,ebuka okorie
+Christian Anderson Jr.,4257480,christian anderson
+Allen Graves,4065720,allen graves
+Jayden Quaintance,3902760,jayden quaintance
+Karim López,3746760,karim lopez
+Labaron Philon Jr.,3597120,labaron philon
+Zuby Ejiofor,3453360,zuby ejiofor
+Cameron Carr,3315360,cameron carr
+Lonnie Walker IV,3286399,lonnie walker
+Sergio de Larrea,3182280,sergio de larrea
+Nassir Little,3107143,nassir little
+Tarris Reed Jr.,3076920,tarris reed
+Tarik Biberovic,3000000,tarik biberovic
+Chris Cenac Jr.,2988120,chris cenac
+Joshua Jefferson,2969520,joshua jefferson
+Alex Karaban,2948280,alex karaban
+Koa Peat,2926800,koa peat
+Ben Simmons,2449421,ben simmons
+Georges Niang,2449421,georges niang
+John Butler,2449421,john butler
+Mario Hezonja,2449421,mario hezonja
+Trey Lyles,2449421,trey lyles
+JaVale McGee,2208856,javale mcgee
+Alex Toohey,2185116,alex toohey
+Baba Miller,1705630,baba miller
+Bogoljub Markovic,1357763,bogoljub markovic
+Bruce Thornton,1357763,bruce thornton
+Christoph Tilly,1357763,christoph tilly
+Emanuel Sharp,1357763,emanuel sharp
+Henri Veesaar,1357763,henri veesaar
+Isaiah Evans,1357763,isaiah evans
+Jameer Nelson Jr.,1357763,jameer nelson
+J'Vonne Hadley,1357763,jvonne hadley
+Khalifa Diop,1357763,khalifa diop
+Meleek Thomas,1357763,meleek thomas
+Milos Uzan,1357763,milos uzan
+Nate Bittle,1357763,nate bittle
+Ryan Conwell,1357763,ryan conwell
+Saint Thomas,1357763,saint thomas
+Tacko Fall,1357763,tacko fall
+Trevon Brazile,1357763,trevon brazile
+Tucker DeVries,1357763,tucker devries
+Will Baker,1357763,will baker
+Vasilije Micić,666667,vasilije micic
+Mamadi Diakite,464050,mamadi diakite
+Ricky Rubio,424672,ricky rubio
+Didi Louzada,268032,didi louzada
