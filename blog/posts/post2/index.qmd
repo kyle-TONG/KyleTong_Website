@@ -2,7 +2,7 @@
 title: "Paying for wins"
 subtitle: "Two web pages, 348 players, and the worst place in the NBA to spend money"
 author: "Kyle Tong"
-date: 2026-09-21
+date: 2026-09-20
 categories:
   - web scraping
   - rvest
