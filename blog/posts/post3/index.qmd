@@ -1,0 +1,188 @@
+---
+title: "Participation fell, nobody stopped working"
+subtitle: "US labor-force participation is down four points since 1990, and up inside every age group over 25"
+author: "Kyle Tong"
+date: 2026-09-28
+categories:
+  - labor market
+  - data visualization
+  - IPUMS CPS
+description: "Participation is down four points since 1990. It is up inside every age group over 25. The difference is the age structure of the country."
+execute:
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(here)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(ggplot2)
+library(scales)
+
+theme_set(theme_minimal(base_size = 12))
+
+AGE_COLOURS <- c("16-24" = "#D55E00", "25-54" = "#0072B2",
+                 "55-64" = "#009E73", "65+"   = "#CC79A7")
+
+DERIVED <- here("blog", "posts", "post3", "data", "derived")
+
+lfp <- read_csv(file.path(DERIVED, "lfp_by_age.csv"), show_col_types = FALSE) |>
+  mutate(age_group = factor(age_group, levels = names(AGE_COLOURS)))
+
+gap <- read_csv(file.path(DERIVED, "weighting_gap.csv"), show_col_types = FALSE)
+
+base <- lfp |>
+  filter(year == 1990) |>
+  select(age_group, lfp_1990 = lfp, share_1990 = share)
+
+# Shift-share. "Rates only" lets participation move with age shares frozen at
+# 1990; "shares only" lets the age structure move with 1990 participation.
+agg <- lfp |>
+  left_join(base, by = "age_group") |>
+  group_by(year) |>
+  summarise(actual      = sum(share * lfp),
+            rates_only  = sum(share_1990 * lfp),
+            shares_only = sum(share * lfp_1990),
+            .groups     = "drop")
+
+pick <- function(df, col, yr) 100 * df[[col]][df$year == yr]
+pct  <- function(x, d = 1) formatC(x, format = "f", digits = d)
+grp  <- function(g, yr) 100 * lfp$lfp[lfp$age_group == g & lfp$year == yr]
+shr  <- function(g, yr) 100 * lfp$share[lfp$age_group == g & lfp$year == yr]
+```
+
+The share of Americans aged 16 and over who are working or looking for work fell from
+`r pct(pick(agg, "actual", 1990))` percent in March 1990 to
+`r pct(pick(agg, "actual", 2026))` percent in March 2026. Over the same 36 years,
+participation rose in every age group above 25. Both statements come from the same
+`r format(round(sum(lfp$n) / 1e6, 1), nsmall = 1)` million CPS records, and the distance
+between them is the age structure of the country.
+
+## The data
+
+Every March Basic Monthly sample from IPUMS CPS between 1990 and 2026, with age,
+labor-force status and the person weight `WTFINL`. The CPS is a sample, and its weights
+exist to make that sample stand for the population, so every rate here is weighted:
+
+```{r}
+#| label: weighting
+#| eval: false
+
+adults |>
+  group_by(year, age_group) |>
+  summarise(lfp        = weighted.mean(in_lf, wtfinl),
+            population = sum(wtfinl))
+```
+
+The universe is people 16 and over whose labor-force status is defined, which is what
+`LABFORCE` in `(1, 2)` selects. Weighting is not a formality here. The unweighted
+participation rate for March 2026 is `r pct(100 * gap$unweighted[gap$year == 2026])`
+percent against a weighted `r pct(100 * gap$weighted[gap$year == 2026])`, because people
+over 65 are `r pct(100 * sum(lfp$n[lfp$year == 2026 & lfp$age_group == "65+"]) / sum(lfp$n[lfp$year == 2026]))`
+percent of the interviewed sample and `r pct(shr("65+", 2026))` percent of the population.
+Older people answer the survey more often, and the CPS sample has shrunk from
+`r format(sum(lfp$n[lfp$year == 1990]), big.mark = ",")` adults in 1990 to
+`r format(sum(lfp$n[lfp$year == 2026]), big.mark = ",")`, so the correction has grown.
+
+## Participation inside each age group
+
+```{r}
+#| label: fig-groups
+#| fig-cap: "Weighted labor-force participation by age group, March of each year. Three of the four lines end above where they started."
+#| fig-width: 7
+#| fig-height: 3.8
+#| echo: false
+
+ggplot(lfp, aes(year, lfp, colour = age_group)) +
+  geom_line(linewidth = 0.8) +
+  scale_colour_manual(values = AGE_COLOURS, name = NULL) +
+  scale_y_continuous(labels = label_percent(accuracy = 1)) +
+  labs(x = NULL, y = "labor-force participation") +
+  theme(legend.position = "top")
+```
+
+Workers aged 25 to 54 participate at `r pct(grp("25-54", 2026))` percent, against
+`r pct(grp("25-54", 1990))` percent in 1990. The 55 to 64 group went from
+`r pct(grp("55-64", 1990))` to `r pct(grp("55-64", 2026))` percent, and participation
+after 65 rose from `r pct(grp("65+", 1990))` to `r pct(grp("65+", 2026))` percent. The one
+group that pulled back is the youngest, down
+`r pct(grp("16-24", 1990) - grp("16-24", 2026))` points, most of which is school
+enrollment rather than idleness, though this extract cannot separate the two.
+
+## The population behind the rates
+
+```{r}
+#| label: fig-shares
+#| fig-cap: "Share of the population aged 16 and over, by age group. The 65+ group has gained eight points of the adult population since 1990."
+#| fig-width: 7
+#| fig-height: 3.8
+#| echo: false
+
+ggplot(lfp, aes(year, share, colour = age_group)) +
+  geom_line(linewidth = 0.8) +
+  scale_colour_manual(values = AGE_COLOURS, name = NULL) +
+  scale_y_continuous(labels = label_percent(accuracy = 1)) +
+  labs(x = NULL, y = "share of adult population") +
+  theme(legend.position = "top")
+```
+
+People over 65 were `r pct(shr("65+", 1990))` percent of the adult population in 1990 and
+are `r pct(shr("65+", 2026))` percent now. The prime-age group fell from
+`r pct(shr("25-54", 1990))` to `r pct(shr("25-54", 2026))` percent. Since participation
+after 65 is around a fifth and participation between 25 and 54 is above four fifths, that
+reshuffling moves the national average on its own, without anyone changing their mind
+about work.
+
+## Splitting the two apart
+
+```{r}
+#| label: fig-decomp
+#| fig-cap: "Aggregate participation, and two counterfactuals. The dashed line holds age shares at their 1990 values; the dotted line holds each group's participation rate at its 1990 value."
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+agg |>
+  pivot_longer(-year) |>
+  mutate(name = factor(name, levels = c("actual", "rates_only", "shares_only"),
+                       labels = c("actual",
+                                  "1990 age shares, actual rates",
+                                  "actual age shares, 1990 rates"))) |>
+  ggplot(aes(year, value, colour = name, linetype = name)) +
+  geom_line(linewidth = 0.8) +
+  scale_colour_manual(values = c("grey20", "#0072B2", "#D55E00"), name = NULL) +
+  scale_linetype_manual(values = c("solid", "dashed", "dotted"), name = NULL) +
+  scale_y_continuous(labels = label_percent(accuracy = 1)) +
+  labs(x = NULL, y = "participation rate, 16 and over") +
+  theme(legend.position = "top", legend.text = element_text(size = 9)) +
+  guides(colour = guide_legend(nrow = 2), linetype = guide_legend(nrow = 2))
+```
+
+Freeze the age structure at its 1990 shares and let participation move as it actually did:
+the rate ends at `r pct(pick(agg, "rates_only", 2026))` percent, slightly above where it
+started. Freeze participation instead and let only the age structure move: the rate falls
+to `r pct(pick(agg, "shares_only", 2026))` percent. The entire decline in the headline
+number, and more, is demographics.
+
+The actual line sits above the demographics-only line, which is the interesting residual.
+The groups gaining population share are the same ones raising their participation, so
+older Americans working longer has offset about
+`r pct(pick(agg, "actual", 2026) - pick(agg, "shares_only", 2026))` points of what aging
+would otherwise have taken out.
+
+## Caveats
+
+Each point is one March, so 2021 carries the pandemic and single months are noisier than
+annual averages. The CPS reweights to new population controls after each census, which
+puts small breaks in the series around 2000, 2010 and 2020. And a shift-share split like
+this one describes an accounting identity, not a cause: it says how much of the change
+sits in the age structure, not why the age structure moved or why 60-year-olds now work.
+
+Both scripts are in `R/`. IPUMS licensing does not allow redistributing microdata, so
+`data/raw/` stays out of the repository and only the aggregated table in `data/derived/`
+is committed. Data from IPUMS CPS, accessed 28 September 2026.

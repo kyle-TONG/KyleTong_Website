@@ -39,7 +39,56 @@
     "href": "blog/index.html",
     "title": "Blog",
     "section": "",
-    "text": "Paying for wins\n\n\nTwo web pages, 348 players, and the worst place in the NBA to spend money\n\n\nScraping Basketball-Reference salaries and production to find out which part of the market sells a win cheapest. It is not the part teams spend most in.\n\n\n\n\n\nSep 21, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nThe average that disagrees with all of its parts\n\n\nSimpson’s paradox, and why ratios refuse to add up\n\n\nBerkeley’s 1973 admissions gap disappears once you look at departments. The arithmetic behind that is simple, and it is a trap you can walk into with any pooled comparison.\n\n\n\n\n\nSep 12, 2026\n\n\nKyle Tong\n\n\n\n\n\nNo matching items"
+    "text": "Participation fell, nobody stopped working\n\n\nUS labor-force participation is down four points since 1990, and up inside every age group over 25\n\n\nParticipation is down four points since 1990. It is up inside every age group over 25. The difference is the age structure of the country.\n\n\n\n\n\nSep 28, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nPaying for wins\n\n\nTwo web pages, 348 players, and the worst place in the NBA to spend money\n\n\nScraping Basketball-Reference salaries and production to find out which part of the market sells a win cheapest. It is not the part teams spend most in.\n\n\n\n\n\nSep 20, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nThe average that disagrees with all of its parts\n\n\nSimpson’s paradox, and why ratios refuse to add up\n\n\nBerkeley’s 1973 admissions gap disappears once you look at departments. The arithmetic behind that is simple, and it is a trap you can walk into with any pooled comparison.\n\n\n\n\n\nSep 12, 2026\n\n\nKyle Tong\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "blog/posts/post2/index.html",
+    "href": "blog/posts/post2/index.html",
+    "title": "Paying for wins",
+    "section": "",
+    "text": "A team with $30 million of cap space this October can buy about 4.2 points of VORP with it, or about 1.5, depending entirely on which part of the salary market it shops in. VORP is Basketball-Reference’s value over replacement player, and multiplying by 2.7 turns it into wins, so the gap between those two numbers is about 7 wins for the same money."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#getting-the-data",
+    "href": "blog/posts/post2/index.html#getting-the-data",
+    "title": "Paying for wins",
+    "section": "Getting the data",
+    "text": "Getting the data\nBasketball-Reference publishes last season’s player statistics and next season’s contracts as ordinary HTML tables. There is no API and no bulk download for them, which is what puts this in scraping territory. Their robots.txt blocks game logs, splits and lineups but leaves /leagues/ and /contracts/ open, and asks for a three second crawl delay, so the acquisition script sends two requests four seconds apart, identifies itself in the user agent, and saves the HTML to disk.\n\npage &lt;- read_html(\"https://www.basketball-reference.com/leagues/NBA_2026_advanced.html\")\nxml2::write_html(page, \"data/raw/bbref_advanced_2026.html\")\n\nadvanced &lt;- page |&gt;\n  html_element(\"#advanced\") |&gt;\n  html_table()\n\nSaving the snapshot matters more than it looks. Every later step parses the local file, so fixing a bug costs zero additional requests, and if the site redesigns its tables next spring the analysis still runs against the page I actually saw.\nTwo things in the parsed tables would have quietly corrupted the result. Player names carry bracketed footnote markers, so Jokić[a] and Jokić fail to join. And a player traded mid-season gets one row per team plus a combined 2TM row, all sharing a rank, so James Harden appears three times unless the partial rows are dropped. Salaries arrive as strings like $62,587,158, which parse_number() handles.\nBecause VORP is a fixed function of two other scraped columns, \\((\\text{BPM} + 2) \\times \\text{MP} / (48 \\times 82)\\), recomputing it is a free test of the whole parse. Across 348 players the largest disagreement is rounding, which rules out shifted columns and numbers read as text."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#what-production-costs",
+    "href": "blog/posts/post2/index.html#what-production-costs",
+    "title": "Paying for wins",
+    "section": "What production costs",
+    "text": "What production costs\nJoining production to salary on player name matched 86 percent of contracts. The misses are not spelling errors: they are 2026 draft picks with no NBA minutes and stars who missed all of last season hurt, which is worth remembering when reading anything below about the top of the market.\n\n\n\n\n\n\n\n\nFigure 1: Total salary divided by total positive VORP, within each salary band. Players with at least 500 minutes in 2025-26, priced against their 2026-27 salary.\n\n\n\n\n\nProduction gets more expensive as salaries rise, which is what competition for scarce talent is supposed to do. The surprise is where the line stops rising. The most expensive production in the league is not at the top: it is in the $15 to $30 million band, at $19.9 million per point, above the $17.3 million that players earning more than $30 million cost.\nTwo rules explain the shape. At the top, the collective bargaining agreement caps individual salaries, so the best players in the league cannot be paid what they are worth. At the bottom, minimum and rookie scale contracts are set by rule rather than by bidding, and a young player who turns out to be good stays cheap for years. The $15 to $30 million band has neither protection. It is priced by open negotiation for players good enough to be paid but not good enough to be capped, and it is the one place where teams routinely pay full price."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#what-to-do-with-that",
+    "href": "blog/posts/post2/index.html#what-to-do-with-that",
+    "title": "Paying for wins",
+    "section": "What to do with that",
+    "text": "What to do with that\nFor a team with cap space and no path to a superstar, the advice is to spend at the extremes and stay out of the middle. Four players at $7 million who each produce half a point of VORP return twice what one player at $28 million producing a single point does, for the same money. The limit is the roster: 15 spots and 240 minutes a night, so a team that already has useful cheap players cannot simply buy more of them, and improving a good roster does eventually require paying for production per minute rather than per dollar.\nTwo caveats. VORP is a box score estimate and misses everything that does not end in a counted event, and the salary is for next season while the production is from last season, which will be wrong about exactly the players who change most.\nBoth scripts are in R/, the raw HTML snapshots and a provenance record in data/raw/, and the tidy file behind the chart in data/derived/. Only 01_acquire.R touches the network. Data from Basketball-Reference, accessed 20 September 2026."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Junhao(Kyle)Tang",
+    "section": "",
+    "text": "Junhao(Kyle)Tang\nUniversity of Pennsylvaina\nWelcome to my personal website.\n\nQuick Links"
+  },
+  {
+    "objectID": "resume.html",
+    "href": "resume.html",
+    "title": "Resume",
+    "section": "",
+    "text": "Download my resume here:"
+  },
+  {
+    "objectID": "resume.html#resume-pdf",
+    "href": "resume.html#resume-pdf",
+    "title": "Resume",
+    "section": "Resume PDF",
+    "text": "Resume PDF"
   },
   {
     "objectID": "blog/posts/post1/index.html",
@@ -77,53 +126,46 @@
     "text": "Takeaway\nA pooled comparison is an average, and an average has weights. When two groups are averaged with different weights, the pooled numbers can point the opposite way from every group inside them. Before you read anything into a headline rate, find out what is being averaged and how the weights differ. The reversal is not a rare pathology; it is what happens whenever composition and outcome are related.\nAdmissions counts are UCBAdmissions in R’s datasets package, from Bickel, Hammel and O’Connell (1975), Science 187, 398–404."
   },
   {
-    "objectID": "resume.html",
-    "href": "resume.html",
-    "title": "Resume",
+    "objectID": "blog/posts/post3/index.html",
+    "href": "blog/posts/post3/index.html",
+    "title": "Participation fell, nobody stopped working",
     "section": "",
-    "text": "Download my resume here:"
+    "text": "The share of Americans aged 16 and over who are working or looking for work fell from 66.2 percent in March 1990 to 62.1 percent in March 2026. Over the same 36 years, participation rose in every age group above 25. Both statements come from the same 3.6 million CPS records, and the distance between them is the age structure of the country."
   },
   {
-    "objectID": "resume.html#resume-pdf",
-    "href": "resume.html#resume-pdf",
-    "title": "Resume",
-    "section": "Resume PDF",
-    "text": "Resume PDF"
+    "objectID": "blog/posts/post3/index.html#the-data",
+    "href": "blog/posts/post3/index.html#the-data",
+    "title": "Participation fell, nobody stopped working",
+    "section": "The data",
+    "text": "The data\nEvery March Basic Monthly sample from IPUMS CPS between 1990 and 2026, with age, labor-force status and the person weight WTFINL. The CPS is a sample, and its weights exist to make that sample stand for the population, so every rate here is weighted:\n\nadults |&gt;\n  group_by(year, age_group) |&gt;\n  summarise(lfp        = weighted.mean(in_lf, wtfinl),\n            population = sum(wtfinl))\n\nThe universe is people 16 and over whose labor-force status is defined, which is what LABFORCE in (1, 2) selects. Weighting is not a formality here. The unweighted participation rate for March 2026 is 59.3 percent against a weighted 62.1, because people over 65 are 28.9 percent of the interviewed sample and 23.4 percent of the population. Older people answer the survey more often, and the CPS sample has shrunk from 112,130 adults in 1990 to 73,712, so the correction has grown."
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Junhao(Kyle)Tang",
-    "section": "",
-    "text": "Junhao(Kyle)Tang\nUniversity of Pennsylvaina\nWelcome to my personal website.\n\nQuick Links"
+    "objectID": "blog/posts/post3/index.html#participation-inside-each-age-group",
+    "href": "blog/posts/post3/index.html#participation-inside-each-age-group",
+    "title": "Participation fell, nobody stopped working",
+    "section": "Participation inside each age group",
+    "text": "Participation inside each age group\n\n\n\n\n\n\n\n\nFigure 1: Weighted labor-force participation by age group, March of each year. Three of the four lines end above where they started.\n\n\n\n\n\nWorkers aged 25 to 54 participate at 84.2 percent, against 83.4 percent in 1990. The 55 to 64 group went from 55.6 to 67.2 percent, and participation after 65 rose from 12.2 to 19.1 percent. The one group that pulled back is the youngest, down 11.1 points, most of which is school enrollment rather than idleness, though this extract cannot separate the two."
   },
   {
-    "objectID": "blog/posts/post2/index.html",
-    "href": "blog/posts/post2/index.html",
-    "title": "Paying for wins",
-    "section": "",
-    "text": "A team with $30 million of cap space this October can buy about 4.2 points of VORP with it, or about 1.5, depending entirely on which part of the salary market it shops in. VORP is Basketball-Reference’s value over replacement player, and multiplying by 2.7 turns it into wins, so the gap between those two numbers is about 7 wins for the same money."
+    "objectID": "blog/posts/post3/index.html#the-population-behind-the-rates",
+    "href": "blog/posts/post3/index.html#the-population-behind-the-rates",
+    "title": "Participation fell, nobody stopped working",
+    "section": "The population behind the rates",
+    "text": "The population behind the rates\n\n\n\n\n\n\n\n\nFigure 2: Share of the population aged 16 and over, by age group. The 65+ group has gained eight points of the adult population since 1990.\n\n\n\n\n\nPeople over 65 were 15.4 percent of the adult population in 1990 and are 23.4 percent now. The prime-age group fell from 55.8 to 47.3 percent. Since participation after 65 is around a fifth and participation between 25 and 54 is above four fifths, that reshuffling moves the national average on its own, without anyone changing their mind about work."
   },
   {
-    "objectID": "blog/posts/post2/index.html#getting-the-data",
-    "href": "blog/posts/post2/index.html#getting-the-data",
-    "title": "Paying for wins",
-    "section": "Getting the data",
-    "text": "Getting the data\nBasketball-Reference publishes last season’s player statistics and next season’s contracts as ordinary HTML tables. There is no API and no bulk download for them, which is what puts this in scraping territory. Their robots.txt blocks game logs, splits and lineups but leaves /leagues/ and /contracts/ open, and asks for a three second crawl delay, so the acquisition script sends two requests four seconds apart, identifies itself in the user agent, and saves the HTML to disk.\n\npage &lt;- read_html(\"https://www.basketball-reference.com/leagues/NBA_2026_advanced.html\")\nxml2::write_html(page, \"data/raw/bbref_advanced_2026.html\")\n\nadvanced &lt;- page |&gt;\n  html_element(\"#advanced\") |&gt;\n  html_table()\n\nSaving the snapshot matters more than it looks. Every later step parses the local file, so fixing a bug costs zero additional requests, and if the site redesigns its tables next spring the analysis still runs against the page I actually saw.\nTwo things in the parsed tables would have quietly corrupted the result. Player names carry bracketed footnote markers, so Jokić[a] and Jokić fail to join. And a player traded mid-season gets one row per team plus a combined 2TM row, all sharing a rank, so James Harden appears three times unless the partial rows are dropped. Salaries arrive as strings like $62,587,158, which parse_number() handles.\nBecause VORP is a fixed function of two other scraped columns, \\((\\text{BPM} + 2) \\times \\text{MP} / (48 \\times 82)\\), recomputing it is a free test of the whole parse. Across 348 players the largest disagreement is rounding, which rules out shifted columns and numbers read as text."
+    "objectID": "blog/posts/post3/index.html#splitting-the-two-apart",
+    "href": "blog/posts/post3/index.html#splitting-the-two-apart",
+    "title": "Participation fell, nobody stopped working",
+    "section": "Splitting the two apart",
+    "text": "Splitting the two apart\n\n\n\n\n\n\n\n\nFigure 3: Aggregate participation, and two counterfactuals. The dashed line holds age shares at their 1990 values; the dotted line holds each group’s participation rate at its 1990 value.\n\n\n\n\n\nFreeze the age structure at its 1990 shares and let participation move as it actually did: the rate ends at 67.0 percent, slightly above where it started. Freeze participation instead and let only the age structure move: the rate falls to 60.0 percent. The entire decline in the headline number, and more, is demographics.\nThe actual line sits above the demographics-only line, which is the interesting residual. The groups gaining population share are the same ones raising their participation, so older Americans working longer has offset about 2.1 points of what aging would otherwise have taken out."
   },
   {
-    "objectID": "blog/posts/post2/index.html#what-production-costs",
-    "href": "blog/posts/post2/index.html#what-production-costs",
-    "title": "Paying for wins",
-    "section": "What production costs",
-    "text": "What production costs\nJoining production to salary on player name matched 86 percent of contracts. The misses are not spelling errors: they are 2026 draft picks with no NBA minutes and stars who missed all of last season hurt, which is worth remembering when reading anything below about the top of the market.\n\n\n\n\n\n\n\n\nFigure 1: Total salary divided by total positive VORP, within each salary band. Players with at least 500 minutes in 2025-26, priced against their 2026-27 salary.\n\n\n\n\n\nProduction gets more expensive as salaries rise, which is what competition for scarce talent is supposed to do. The surprise is where the line stops rising. The most expensive production in the league is not at the top: it is in the $15 to $30 million band, at $19.9 million per point, above the $17.3 million that players earning more than $30 million cost.\nTwo rules explain the shape. At the top, the collective bargaining agreement caps individual salaries, so the best players in the league cannot be paid what they are worth. At the bottom, minimum and rookie scale contracts are set by rule rather than by bidding, and a young player who turns out to be good stays cheap for years. The $15 to $30 million band has neither protection. It is priced by open negotiation for players good enough to be paid but not good enough to be capped, and it is the one place where teams routinely pay full price."
-  },
-  {
-    "objectID": "blog/posts/post2/index.html#what-to-do-with-that",
-    "href": "blog/posts/post2/index.html#what-to-do-with-that",
-    "title": "Paying for wins",
-    "section": "What to do with that",
-    "text": "What to do with that\nFor a team with cap space and no path to a superstar, the advice is to spend at the extremes and stay out of the middle. Four players at $7 million who each produce half a point of VORP return twice what one player at $28 million producing a single point does, for the same money. The limit is the roster: 15 spots and 240 minutes a night, so a team that already has useful cheap players cannot simply buy more of them, and improving a good roster does eventually require paying for production per minute rather than per dollar.\nTwo caveats. VORP is a box score estimate and misses everything that does not end in a counted event, and the salary is for next season while the production is from last season, which will be wrong about exactly the players who change most.\nBoth scripts are in R/, the raw HTML snapshots and a provenance record in data/raw/, and the tidy file behind the chart in data/derived/. Only 01_acquire.R touches the network. Data from Basketball-Reference, accessed 20 September 2026."
+    "objectID": "blog/posts/post3/index.html#caveats",
+    "href": "blog/posts/post3/index.html#caveats",
+    "title": "Participation fell, nobody stopped working",
+    "section": "Caveats",
+    "text": "Caveats\nEach point is one March, so 2021 carries the pandemic and single months are noisier than annual averages. The CPS reweights to new population controls after each census, which puts small breaks in the series around 2000, 2010 and 2020. And a shift-share split like this one describes an accounting identity, not a cause: it says how much of the change sits in the age structure, not why the age structure moved or why 60-year-olds now work.\nBoth scripts are in R/. IPUMS licensing does not allow redistributing microdata, so data/raw/ stays out of the repository and only the aggregated table in data/derived/ is committed. Data from IPUMS CPS, accessed 28 September 2026."
   },
   {
     "objectID": "about.html",

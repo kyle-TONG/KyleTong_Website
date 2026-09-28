@@ -1,0 +1,2 @@
+source,source_url,collection,samples,n_samples,variables,ddi_file,accessed_at
+IPUMS CPS,https://cps.ipums.org/cps/,cps,1990-2026,37,AGE SEX LABFORCE EMPSTAT WTFINL,cps_00001.xml,NA
