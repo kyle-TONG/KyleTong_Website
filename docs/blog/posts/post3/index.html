@@ -273,7 +273,8 @@ Figure&nbsp;3: Aggregate participation, and two counterfactuals. The dashed line
 <section id="caveats" class="level2">
 <h2 class="anchored" data-anchor-id="caveats">Caveats</h2>
 <p>Each point is one March, so 2021 carries the pandemic and single months are noisier than annual averages. The CPS reweights to new population controls after each census, which puts small breaks in the series around 2000, 2010 and 2020. And a shift-share split like this one describes an accounting identity, not a cause: it says how much of the change sits in the age structure, not why the age structure moved or why 60-year-olds now work.</p>
-<p>Both scripts are in <code>R/</code>. IPUMS licensing does not allow redistributing microdata, so <code>data/raw/</code> stays out of the repository and only the aggregated table in <code>data/derived/</code> is committed. Data from IPUMS CPS, accessed 28 September 2026.</p>
+<p>Both scripts are in <code>R/</code>, with the extract definition and the weighting in <code>README.md</code>. The 72 MB extract stays out of the repository and only the aggregated tables in <code>data/derived/</code> are committed, so anyone rebuilding this needs an IPUMS account and a run of <code>01_acquire.R</code>.</p>
+<p>Data accessed 28 September 2026. Sarah Flood, Miriam King, Renae Rodgers, Steven Ruggles, J. Robert Warren, Daniel Backman, Etienne Breton, Grace Cooper, Julia A. Rivera Drew, Stephanie Richards, David Van Riper, and Kari C.W. Williams. IPUMS CPS: Version 13.0 [dataset]. Minneapolis, MN: IPUMS, 2025. <a href="https://doi.org/10.18128/D030.V13.0" class="uri">https://doi.org/10.18128/D030.V13.0</a></p>
 
 
 </section>

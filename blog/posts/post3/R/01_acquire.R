@@ -87,6 +87,6 @@ metadata <- tibble(
 write_csv(metadata, file.path(RAW_DIR, "metadata.csv"))
 print(metadata)
 
-# IPUMS licensing forbids redistributing the microdata, so data/raw is kept
-# out of git. 02_clean.R writes an aggregated table that can be shared.
+# The extract is large and IPUMS asks users to register before downloading, so
+# data/raw is kept out of git. 02_clean.R writes the aggregated tables instead.
 message("raw microdata stays local; run 02_clean.R next")

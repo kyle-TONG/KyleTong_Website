@@ -7,8 +7,8 @@
 
 **/*.quarto_ipynb
 
-# IPUMS licensing forbids redistributing microdata. The extract stays local;
-# blog/posts/post3/data/derived/ holds the aggregated table the post uses.
+# IPUMS extracts are large and require an account to download. The extract stays
+# local; blog/posts/post3/data/derived/ holds the aggregated tables.
 blog/posts/post3/data/raw/*.dat.gz
 blog/posts/post3/data/raw/*.dat
 blog/posts/post3/data/raw/*.xml
