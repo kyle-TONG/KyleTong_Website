@@ -1,0 +1,172 @@
+---
+title: "Most of the productivity-pay gap is a unit conversion"
+subtitle: "Output per hour is up 159 percent since 1973 and the production worker's real wage is up 3. Two thirds of the distance is deflator choice and the definition of a paycheck."
+author: "Kyle Tong"
+date: 2026-10-06
+categories:
+  - macro
+  - data visualization
+  - FRED
+description: "The famous decoupling chart, taken apart into three pieces. The piece that is really about labor losing ground is the newest one, and it barely existed before 2000."
+execute:
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(here)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(ggplot2)
+library(scales)
+
+theme_set(theme_minimal(base_size = 12))
+
+PAL <- c(productivity  = "grey20",
+         comp_output   = "#0072B2",
+         comp_consumer = "#009E73",
+         wage_consumer = "#D55E00")
+
+LAB <- c(productivity  = "output per hour",
+         comp_output   = "compensation, output prices",
+         comp_consumer = "compensation, consumer prices",
+         wage_consumer = "production wage, consumer prices")
+
+d <- read_csv(here("blog", "posts", "post4", "data", "derived",
+                   "decomposition.csv"), show_col_types = FALSE)
+
+last <- slice_tail(d, n = 1)
+pt   <- function(x, dg = 0) formatC(x, format = "f", digits = dg)
+sh   <- function(w) 100 * last[[w]] / last$gap_total
+
+long <- d |>
+  pivot_longer(all_of(names(PAL)), names_to = "series") |>
+  mutate(series = factor(series, levels = names(PAL)))
+```
+
+Output per hour in the US nonfarm business sector is
+`r pt(last$productivity - 100)` percent higher than it was in the first quarter of 1973.
+The average hourly wage of a production worker, deflated by consumer prices, is
+`r pt(last$wage_consumer - 100)` percent higher. Those two numbers are the usual evidence
+that workers stopped sharing in what they produce.
+
+```{r}
+#| label: fig-gap
+#| fig-cap: "Labor productivity and the production worker's real wage, 1973 Q1 = 100. The series start in 1964, where the wage data begins."
+#| fig-width: 7
+#| fig-height: 3.6
+#| echo: false
+
+long |>
+  filter(series %in% c("productivity", "wage_consumer")) |>
+  ggplot(aes(date, value, colour = series)) +
+  geom_line(linewidth = 0.8) +
+  geom_hline(yintercept = 100, linewidth = 0.3, colour = "grey70") +
+  scale_colour_manual(values = PAL, labels = LAB, name = NULL) +
+  labs(x = NULL, y = "index, 1973 Q1 = 100") +
+  theme(legend.position = "top")
+```
+
+The two lines sit on top of each other until the mid-1970s and then separate, which is
+where the story usually stops. But productivity and that wage are not measured in the same
+units, and they do not refer to the same paycheck. Fixing each in turn closes most of the
+gap.
+
+## The deflator
+
+Productivity is real output: what a sector produces, valued at the prices of the things it
+produces. The wage above is deflated by the consumer price index, which measures what a
+paycheck buys. A firm deciding whether an extra hour of labor is worth its cost compares
+both to the price of its own output, so for that comparison the output deflator is the
+consistent one.
+
+The two price indices have not moved together. Housing, healthcare and education dominate
+consumer spending and barely appear in business output prices, while computers and imported
+goods pull the output deflator down. Swapping the consumer deflator for the output deflator,
+holding the pay measure fixed, is worth `r pt(last$w_deflator)` index points.
+
+## The paycheck
+
+`AHETPI` covers production and nonsupervisory workers, roughly four fifths of private
+employment, and it counts wages only. Compensation adds employer-paid health insurance and
+retirement contributions, which is money the employer spends on labor whether or not it
+shows up in a wage, and it covers everyone including managers. Moving from one to the other
+is worth `r pt(last$w_pay_concept)` points.
+
+This wedge is not purely bookkeeping. Part of it is benefits, and part of it is that pay
+growth went to people above the production and nonsupervisory line. These series cannot
+separate the two, and the second part is a real distributional change rather than a
+measurement choice.
+
+```{r}
+#| label: fig-ladder
+#| fig-cap: "The same gap, with each transformation added in turn. Each step up is one change of units or one change of pay concept."
+#| fig-width: 7
+#| fig-height: 4
+#| echo: false
+
+ggplot(long, aes(date, value, colour = series)) +
+  geom_line(linewidth = 0.8) +
+  geom_hline(yintercept = 100, linewidth = 0.3, colour = "grey70") +
+  scale_colour_manual(values = PAL, labels = LAB, name = NULL) +
+  labs(x = NULL, y = "index, 1973 Q1 = 100") +
+  theme(legend.position = "top") +
+  guides(colour = guide_legend(nrow = 2))
+```
+
+What survives both corrections is the distance between productivity and real compensation
+measured in the same prices: `r pt(last$w_labor_share)` points, or
+`r pt(sh("w_labor_share"))` percent of the original gap. That residual is labor's share of
+output, and it is the only piece that means what the headline chart is usually taken to
+mean.
+
+## When each piece opened
+
+```{r}
+#| label: fig-wedges
+#| fig-cap: "The gap in @fig-gap, split into three. The three lines add to the total at every date."
+#| fig-width: 7
+#| fig-height: 3.8
+#| echo: false
+
+d |>
+  select(date, gap_total, w_pay_concept, w_deflator, w_labor_share) |>
+  pivot_longer(-date) |>
+  mutate(name = factor(name,
+    levels = c("gap_total", "w_pay_concept", "w_deflator", "w_labor_share"),
+    labels = c("total gap", "pay concept", "deflator", "labor share"))) |>
+  ggplot(aes(date, value, colour = name, linewidth = name)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linewidth = 0.3, colour = "grey70") +
+  scale_colour_manual(values = c("grey70", "#009E73", "#0072B2", "#D55E00"),
+                      name = NULL) +
+  scale_linewidth_manual(values = c(1.2, 0.8, 0.8, 0.8), guide = "none") +
+  labs(x = NULL, y = "index points of the gap") +
+  theme(legend.position = "top")
+```
+
+The three pieces arrived in order. The pay-concept wedge opened first, in the late 1970s,
+and had done most of its work by 2000 as employer health costs grew. The deflator wedge has
+widened at a near-constant rate since the early 1980s. The labor-share wedge, the one that
+actually describes workers getting a smaller slice, sat near zero for the first thirty
+years and only crossed ten points in 2005. It is now `r pt(last$w_labor_share)`.
+
+So the common summary, that pay stopped tracking productivity in the early 1970s, is
+pointing at the right chart and the wrong decade. Labor's share of what it produced held up
+through the 1980s and 1990s. It started falling around 2000, which is a narrower claim, a
+more recent one, and a more useful one if the question is what changed.
+
+## Caveats
+
+Compensation here is an average, so it is pulled up by pay at the top; the distance between
+average compensation and what a median worker earns is inequality rather than measurement,
+and it is sitting inside the pay-concept wedge. Productivity is gross of depreciation, and a
+net measure would close a few more points, since capital wears out faster than it used to.
+The 1973 base quarter is a convention rather than a fact about the data.
+
+Both scripts are in `R/`, with the series list and the construction in `README.md`. Data
+from FRED, Federal Reserve Bank of St. Louis, accessed 6 October 2026.

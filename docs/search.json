@@ -39,91 +39,7 @@
     "href": "blog/index.html",
     "title": "Blog",
     "section": "",
-    "text": "Participation fell, nobody stopped working\n\n\nUS labor-force participation is down four points since 1990, and up inside every age group over 25\n\n\nParticipation is down four points since 1990. It is up inside every age group over 25. The difference is the age structure of the country.\n\n\n\n\n\nSep 28, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nPaying for wins\n\n\nTwo web pages, 348 players, and the worst place in the NBA to spend money\n\n\nScraping Basketball-Reference salaries and production to find out which part of the market sells a win cheapest. It is not the part teams spend most in.\n\n\n\n\n\nSep 20, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nThe average that disagrees with all of its parts\n\n\nSimpson’s paradox, and why ratios refuse to add up\n\n\nBerkeley’s 1973 admissions gap disappears once you look at departments. The arithmetic behind that is simple, and it is a trap you can walk into with any pooled comparison.\n\n\n\n\n\nSep 12, 2026\n\n\nKyle Tong\n\n\n\n\n\nNo matching items"
-  },
-  {
-    "objectID": "blog/posts/post2/index.html",
-    "href": "blog/posts/post2/index.html",
-    "title": "Paying for wins",
-    "section": "",
-    "text": "A team with $30 million of cap space this October can buy about 4.2 points of VORP with it, or about 1.5, depending entirely on which part of the salary market it shops in. VORP is Basketball-Reference’s value over replacement player, and multiplying by 2.7 turns it into wins, so the gap between those two numbers is about 7 wins for the same money."
-  },
-  {
-    "objectID": "blog/posts/post2/index.html#getting-the-data",
-    "href": "blog/posts/post2/index.html#getting-the-data",
-    "title": "Paying for wins",
-    "section": "Getting the data",
-    "text": "Getting the data\nBasketball-Reference publishes last season’s player statistics and next season’s contracts as ordinary HTML tables. There is no API and no bulk download for them, which is what puts this in scraping territory. Their robots.txt blocks game logs, splits and lineups but leaves /leagues/ and /contracts/ open, and asks for a three second crawl delay, so the acquisition script sends two requests four seconds apart, identifies itself in the user agent, and saves the HTML to disk.\n\npage &lt;- read_html(\"https://www.basketball-reference.com/leagues/NBA_2026_advanced.html\")\nxml2::write_html(page, \"data/raw/bbref_advanced_2026.html\")\n\nadvanced &lt;- page |&gt;\n  html_element(\"#advanced\") |&gt;\n  html_table()\n\nSaving the snapshot matters more than it looks. Every later step parses the local file, so fixing a bug costs zero additional requests, and if the site redesigns its tables next spring the analysis still runs against the page I actually saw.\nTwo things in the parsed tables would have quietly corrupted the result. Player names carry bracketed footnote markers, so Jokić[a] and Jokić fail to join. And a player traded mid-season gets one row per team plus a combined 2TM row, all sharing a rank, so James Harden appears three times unless the partial rows are dropped. Salaries arrive as strings like $62,587,158, which parse_number() handles.\nBecause VORP is a fixed function of two other scraped columns, \\((\\text{BPM} + 2) \\times \\text{MP} / (48 \\times 82)\\), recomputing it is a free test of the whole parse. Across 348 players the largest disagreement is rounding, which rules out shifted columns and numbers read as text."
-  },
-  {
-    "objectID": "blog/posts/post2/index.html#what-production-costs",
-    "href": "blog/posts/post2/index.html#what-production-costs",
-    "title": "Paying for wins",
-    "section": "What production costs",
-    "text": "What production costs\nJoining production to salary on player name matched 86 percent of contracts. The misses are not spelling errors: they are 2026 draft picks with no NBA minutes and stars who missed all of last season hurt, which is worth remembering when reading anything below about the top of the market.\n\n\n\n\n\n\n\n\nFigure 1: Total salary divided by total positive VORP, within each salary band. Players with at least 500 minutes in 2025-26, priced against their 2026-27 salary.\n\n\n\n\n\nProduction gets more expensive as salaries rise, which is what competition for scarce talent is supposed to do. The surprise is where the line stops rising. The most expensive production in the league is not at the top: it is in the $15 to $30 million band, at $19.9 million per point, above the $17.3 million that players earning more than $30 million cost.\nTwo rules explain the shape. At the top, the collective bargaining agreement caps individual salaries, so the best players in the league cannot be paid what they are worth. At the bottom, minimum and rookie scale contracts are set by rule rather than by bidding, and a young player who turns out to be good stays cheap for years. The $15 to $30 million band has neither protection. It is priced by open negotiation for players good enough to be paid but not good enough to be capped, and it is the one place where teams routinely pay full price."
-  },
-  {
-    "objectID": "blog/posts/post2/index.html#what-to-do-with-that",
-    "href": "blog/posts/post2/index.html#what-to-do-with-that",
-    "title": "Paying for wins",
-    "section": "What to do with that",
-    "text": "What to do with that\nFor a team with cap space and no path to a superstar, the advice is to spend at the extremes and stay out of the middle. Four players at $7 million who each produce half a point of VORP return twice what one player at $28 million producing a single point does, for the same money. The limit is the roster: 15 spots and 240 minutes a night, so a team that already has useful cheap players cannot simply buy more of them, and improving a good roster does eventually require paying for production per minute rather than per dollar.\nTwo caveats. VORP is a box score estimate and misses everything that does not end in a counted event, and the salary is for next season while the production is from last season, which will be wrong about exactly the players who change most.\nBoth scripts are in R/, the raw HTML snapshots and a provenance record in data/raw/, and the tidy file behind the chart in data/derived/. Only 01_acquire.R touches the network. Data from Basketball-Reference, accessed 20 September 2026."
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Junhao(Kyle)Tang",
-    "section": "",
-    "text": "Junhao(Kyle)Tang\nUniversity of Pennsylvaina\nWelcome to my personal website.\n\nQuick Links"
-  },
-  {
-    "objectID": "resume.html",
-    "href": "resume.html",
-    "title": "Resume",
-    "section": "",
-    "text": "Download my resume here:"
-  },
-  {
-    "objectID": "resume.html#resume-pdf",
-    "href": "resume.html#resume-pdf",
-    "title": "Resume",
-    "section": "Resume PDF",
-    "text": "Resume PDF"
-  },
-  {
-    "objectID": "blog/posts/post1/index.html",
-    "href": "blog/posts/post1/index.html",
-    "title": "The average that disagrees with all of its parts",
-    "section": "",
-    "text": "In 1973 the graduate school at Berkeley admitted about 44% of men who applied and about 30% of women. Thousands of applicants sit behind those two numbers, so the gap is not noise. Split the same applicants by department and it very nearly disappears. In the largest department of all, women were admitted at a higher rate than men.\nNothing was recounted. The two statements are about the same people."
-  },
-  {
-    "objectID": "blog/posts/post1/index.html#what-the-berkeley-numbers-look-like",
-    "href": "blog/posts/post1/index.html#what-the-berkeley-numbers-look-like",
-    "title": "The average that disagrees with all of its parts",
-    "section": "What the Berkeley numbers look like",
-    "text": "What the Berkeley numbers look like\nR ships with the data, so you can check this in four lines.\n\nrates &lt;- as.data.frame(UCBAdmissions) |&gt;\n  group_by(Dept, Gender) |&gt;\n  summarise(applicants = sum(Freq),\n            admitted   = sum(Freq[Admit == \"Admitted\"]),\n            .groups    = \"drop\") |&gt;\n  mutate(rate = admitted / applicants)\n\nrates |&gt;\n  select(Dept, Gender, applicants, rate) |&gt;\n  pivot_wider(names_from = Gender, values_from = c(applicants, rate)) |&gt;\n  transmute(Department    = Dept,\n            `Men applied` = applicants_Male,\n            `Men admitted` = sprintf(\"%.0f%%\", 100 * rate_Male),\n            `Women applied` = applicants_Female,\n            `Women admitted` = sprintf(\"%.0f%%\", 100 * rate_Female)) |&gt;\n  knitr::kable(align = \"lrrrr\")\n\n\n\nTable 1: Admission rates by department, six largest departments, Berkeley 1973.\n\n\n\n\n\n\nDepartment\nMen applied\nMen admitted\nWomen applied\nWomen admitted\n\n\n\n\nA\n825\n62%\n108\n82%\n\n\nB\n560\n63%\n25\n68%\n\n\nC\n325\n37%\n593\n34%\n\n\nD\n417\n33%\n375\n35%\n\n\nE\n191\n28%\n393\n24%\n\n\nF\n373\n6%\n341\n7%\n\n\n\n\n\n\n\n\nDepartments A and B admitted more than 60% of everyone who applied. Departments C through F admitted far fewer. Men applied overwhelmingly to A and B; women applied overwhelmingly to C through F.\n\npooled &lt;- rates |&gt;\n  group_by(Gender) |&gt;\n  summarise(rate = sum(admitted) / sum(applicants))\n\nggplot(rates, aes(Dept, rate, colour = Gender)) +\n  geom_hline(data = pooled, aes(yintercept = rate, colour = Gender),\n             linetype = \"dashed\", linewidth = 0.4) +\n  geom_point(aes(size = applicants)) +\n  scale_y_continuous(labels = scales::percent) +\n  scale_size_area(max_size = 8) +\n  labs(x = \"department\", y = \"admission rate\", colour = NULL, size = \"applicants\")\n\n\n\n\n\n\n\nFigure 1: Admission rate by department and gender. Point size is the number of applicants. Dashed lines are the pooled rates.\n\n\n\n\n\nThe dashed lines are far apart. The points are not."
-  },
-  {
-    "objectID": "blog/posts/post1/index.html#why-ratios-can-do-this",
-    "href": "blog/posts/post1/index.html#why-ratios-can-do-this",
-    "title": "The average that disagrees with all of its parts",
-    "section": "Why ratios can do this",
-    "text": "Why ratios can do this\nA pooled rate is a weighted average of the department rates,\n\\[\n\\bar r = \\sum_d w_d \\, r_d, \\qquad w_d = \\frac{n_d}{\\sum_k n_k},\n\\]\nand the weights \\(w_d\\) are part of the data, not a constant you can divide out. Men and women faced the same \\(r_d\\) but carried different \\(w_d\\), and the difference in weights is bigger than the differences in rates. Pooling therefore measures something nobody intended to measure: where each group chose to apply."
-  },
-  {
-    "objectID": "blog/posts/post1/index.html#why-it-feels-impossible",
-    "href": "blog/posts/post1/index.html#why-it-feels-impossible",
-    "title": "The average that disagrees with all of its parts",
-    "section": "Why it feels impossible",
-    "text": "Why it feels impossible\nCounts behave the way intuition expects. If men outnumber women in every department, they outnumber women overall, always. We quietly extend that rule to percentages, and for percentages it is false. Adding a fraction to a fraction means adding numerators and denominators separately, and the denominators are free to move.\nThe phenomenon predates its name by half a century. Pearson noticed in 1899 that mixing two populations manufactures correlations that exist in neither, and Yule gave the contingency-table version in 1903. Simpson’s 1951 paper worked out what the reversal means for interpreting interaction, and Blyth attached his name to it in 1972. Yule had it first, which is why some writers call it the Yule-Simpson effect.\nOne thing the Berkeley example does not show is that there was no discrimination. Bickel and his coauthors, writing in Science in 1975, made that point themselves: conditioning on department moves the question rather than closing it, since departments differ in funding and capacity, and applicants do not choose where to apply in a vacuum."
-  },
-  {
-    "objectID": "blog/posts/post1/index.html#takeaway",
-    "href": "blog/posts/post1/index.html#takeaway",
-    "title": "The average that disagrees with all of its parts",
-    "section": "Takeaway",
-    "text": "Takeaway\nA pooled comparison is an average, and an average has weights. When two groups are averaged with different weights, the pooled numbers can point the opposite way from every group inside them. Before you read anything into a headline rate, find out what is being averaged and how the weights differ. The reversal is not a rare pathology; it is what happens whenever composition and outcome are related.\nAdmissions counts are UCBAdmissions in R’s datasets package, from Bickel, Hammel and O’Connell (1975), Science 187, 398–404."
+    "text": "Most of the productivity-pay gap is a unit conversion\n\n\nOutput per hour is up 159 percent since 1973 and the production worker’s real wage is up 3. Two thirds of the distance is deflator choice and the definition of a paycheck.\n\n\nThe famous decoupling chart, taken apart into three pieces. The piece that is really about labor losing ground is the newest one, and it barely existed before 2000.\n\n\n\n\n\nOct 6, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nParticipation fell, nobody stopped working\n\n\nUS labor-force participation is down four points since 1990, and up inside every age group over 25\n\n\nParticipation is down four points since 1990. It is up inside every age group over 25. The difference is the age structure of the country.\n\n\n\n\n\nSep 28, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nPaying for wins\n\n\nTwo web pages, 348 players, and the worst place in the NBA to spend money\n\n\nScraping Basketball-Reference salaries and production to find out which part of the market sells a win cheapest. It is not the part teams spend most in.\n\n\n\n\n\nSep 20, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nThe average that disagrees with all of its parts\n\n\nSimpson’s paradox, and why ratios refuse to add up\n\n\nBerkeley’s 1973 admissions gap disappears once you look at departments. The arithmetic behind that is simple, and it is a trap you can walk into with any pooled comparison.\n\n\n\n\n\nSep 12, 2026\n\n\nKyle Tong\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "blog/posts/post3/index.html",
@@ -166,6 +82,125 @@
     "title": "Participation fell, nobody stopped working",
     "section": "Caveats",
     "text": "Caveats\nEach point is one March, so 2021 carries the pandemic and single months are noisier than annual averages. The CPS reweights to new population controls after each census, which puts small breaks in the series around 2000, 2010 and 2020. And a shift-share split like this one describes an accounting identity, not a cause: it says how much of the change sits in the age structure, not why the age structure moved or why 60-year-olds now work.\nBoth scripts are in R/, with the extract definition and the weighting in README.md. The 72 MB extract stays out of the repository and only the aggregated tables in data/derived/ are committed, so anyone rebuilding this needs an IPUMS account and a run of 01_acquire.R.\nData accessed 28 September 2026. Sarah Flood, Miriam King, Renae Rodgers, Steven Ruggles, J. Robert Warren, Daniel Backman, Etienne Breton, Grace Cooper, Julia A. Rivera Drew, Stephanie Richards, David Van Riper, and Kari C.W. Williams. IPUMS CPS: Version 13.0 [dataset]. Minneapolis, MN: IPUMS, 2025. https://doi.org/10.18128/D030.V13.0"
+  },
+  {
+    "objectID": "blog/posts/post1/index.html",
+    "href": "blog/posts/post1/index.html",
+    "title": "The average that disagrees with all of its parts",
+    "section": "",
+    "text": "In 1973 the graduate school at Berkeley admitted about 44% of men who applied and about 30% of women. Thousands of applicants sit behind those two numbers, so the gap is not noise. Split the same applicants by department and it very nearly disappears. In the largest department of all, women were admitted at a higher rate than men.\nNothing was recounted. The two statements are about the same people."
+  },
+  {
+    "objectID": "blog/posts/post1/index.html#what-the-berkeley-numbers-look-like",
+    "href": "blog/posts/post1/index.html#what-the-berkeley-numbers-look-like",
+    "title": "The average that disagrees with all of its parts",
+    "section": "What the Berkeley numbers look like",
+    "text": "What the Berkeley numbers look like\nR ships with the data, so you can check this in four lines.\n\nrates &lt;- as.data.frame(UCBAdmissions) |&gt;\n  group_by(Dept, Gender) |&gt;\n  summarise(applicants = sum(Freq),\n            admitted   = sum(Freq[Admit == \"Admitted\"]),\n            .groups    = \"drop\") |&gt;\n  mutate(rate = admitted / applicants)\n\nrates |&gt;\n  select(Dept, Gender, applicants, rate) |&gt;\n  pivot_wider(names_from = Gender, values_from = c(applicants, rate)) |&gt;\n  transmute(Department    = Dept,\n            `Men applied` = applicants_Male,\n            `Men admitted` = sprintf(\"%.0f%%\", 100 * rate_Male),\n            `Women applied` = applicants_Female,\n            `Women admitted` = sprintf(\"%.0f%%\", 100 * rate_Female)) |&gt;\n  knitr::kable(align = \"lrrrr\")\n\n\n\nTable 1: Admission rates by department, six largest departments, Berkeley 1973.\n\n\n\n\n\n\nDepartment\nMen applied\nMen admitted\nWomen applied\nWomen admitted\n\n\n\n\nA\n825\n62%\n108\n82%\n\n\nB\n560\n63%\n25\n68%\n\n\nC\n325\n37%\n593\n34%\n\n\nD\n417\n33%\n375\n35%\n\n\nE\n191\n28%\n393\n24%\n\n\nF\n373\n6%\n341\n7%\n\n\n\n\n\n\n\n\nDepartments A and B admitted more than 60% of everyone who applied. Departments C through F admitted far fewer. Men applied overwhelmingly to A and B; women applied overwhelmingly to C through F.\n\npooled &lt;- rates |&gt;\n  group_by(Gender) |&gt;\n  summarise(rate = sum(admitted) / sum(applicants))\n\nggplot(rates, aes(Dept, rate, colour = Gender)) +\n  geom_hline(data = pooled, aes(yintercept = rate, colour = Gender),\n             linetype = \"dashed\", linewidth = 0.4) +\n  geom_point(aes(size = applicants)) +\n  scale_y_continuous(labels = scales::percent) +\n  scale_size_area(max_size = 8) +\n  labs(x = \"department\", y = \"admission rate\", colour = NULL, size = \"applicants\")\n\n\n\n\n\n\n\nFigure 1: Admission rate by department and gender. Point size is the number of applicants. Dashed lines are the pooled rates.\n\n\n\n\n\nThe dashed lines are far apart. The points are not."
+  },
+  {
+    "objectID": "blog/posts/post1/index.html#why-ratios-can-do-this",
+    "href": "blog/posts/post1/index.html#why-ratios-can-do-this",
+    "title": "The average that disagrees with all of its parts",
+    "section": "Why ratios can do this",
+    "text": "Why ratios can do this\nA pooled rate is a weighted average of the department rates,\n\\[\n\\bar r = \\sum_d w_d \\, r_d, \\qquad w_d = \\frac{n_d}{\\sum_k n_k},\n\\]\nand the weights \\(w_d\\) are part of the data, not a constant you can divide out. Men and women faced the same \\(r_d\\) but carried different \\(w_d\\), and the difference in weights is bigger than the differences in rates. Pooling therefore measures something nobody intended to measure: where each group chose to apply."
+  },
+  {
+    "objectID": "blog/posts/post1/index.html#why-it-feels-impossible",
+    "href": "blog/posts/post1/index.html#why-it-feels-impossible",
+    "title": "The average that disagrees with all of its parts",
+    "section": "Why it feels impossible",
+    "text": "Why it feels impossible\nCounts behave the way intuition expects. If men outnumber women in every department, they outnumber women overall, always. We quietly extend that rule to percentages, and for percentages it is false. Adding a fraction to a fraction means adding numerators and denominators separately, and the denominators are free to move.\nThe phenomenon predates its name by half a century. Pearson noticed in 1899 that mixing two populations manufactures correlations that exist in neither, and Yule gave the contingency-table version in 1903. Simpson’s 1951 paper worked out what the reversal means for interpreting interaction, and Blyth attached his name to it in 1972. Yule had it first, which is why some writers call it the Yule-Simpson effect.\nOne thing the Berkeley example does not show is that there was no discrimination. Bickel and his coauthors, writing in Science in 1975, made that point themselves: conditioning on department moves the question rather than closing it, since departments differ in funding and capacity, and applicants do not choose where to apply in a vacuum."
+  },
+  {
+    "objectID": "blog/posts/post1/index.html#takeaway",
+    "href": "blog/posts/post1/index.html#takeaway",
+    "title": "The average that disagrees with all of its parts",
+    "section": "Takeaway",
+    "text": "Takeaway\nA pooled comparison is an average, and an average has weights. When two groups are averaged with different weights, the pooled numbers can point the opposite way from every group inside them. Before you read anything into a headline rate, find out what is being averaged and how the weights differ. The reversal is not a rare pathology; it is what happens whenever composition and outcome are related.\nAdmissions counts are UCBAdmissions in R’s datasets package, from Bickel, Hammel and O’Connell (1975), Science 187, 398–404."
+  },
+  {
+    "objectID": "resume.html",
+    "href": "resume.html",
+    "title": "Resume",
+    "section": "",
+    "text": "Download my resume here:"
+  },
+  {
+    "objectID": "resume.html#resume-pdf",
+    "href": "resume.html#resume-pdf",
+    "title": "Resume",
+    "section": "Resume PDF",
+    "text": "Resume PDF"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Junhao(Kyle)Tang",
+    "section": "",
+    "text": "Junhao(Kyle)Tang\nUniversity of Pennsylvaina\nWelcome to my personal website.\n\nQuick Links"
+  },
+  {
+    "objectID": "blog/posts/post2/index.html",
+    "href": "blog/posts/post2/index.html",
+    "title": "Paying for wins",
+    "section": "",
+    "text": "A team with $30 million of cap space this October can buy about 4.2 points of VORP with it, or about 1.5, depending entirely on which part of the salary market it shops in. VORP is Basketball-Reference’s value over replacement player, and multiplying by 2.7 turns it into wins, so the gap between those two numbers is about 7 wins for the same money."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#getting-the-data",
+    "href": "blog/posts/post2/index.html#getting-the-data",
+    "title": "Paying for wins",
+    "section": "Getting the data",
+    "text": "Getting the data\nBasketball-Reference publishes last season’s player statistics and next season’s contracts as ordinary HTML tables. There is no API and no bulk download for them, which is what puts this in scraping territory. Their robots.txt blocks game logs, splits and lineups but leaves /leagues/ and /contracts/ open, and asks for a three second crawl delay, so the acquisition script sends two requests four seconds apart, identifies itself in the user agent, and saves the HTML to disk.\n\npage &lt;- read_html(\"https://www.basketball-reference.com/leagues/NBA_2026_advanced.html\")\nxml2::write_html(page, \"data/raw/bbref_advanced_2026.html\")\n\nadvanced &lt;- page |&gt;\n  html_element(\"#advanced\") |&gt;\n  html_table()\n\nSaving the snapshot matters more than it looks. Every later step parses the local file, so fixing a bug costs zero additional requests, and if the site redesigns its tables next spring the analysis still runs against the page I actually saw.\nTwo things in the parsed tables would have quietly corrupted the result. Player names carry bracketed footnote markers, so Jokić[a] and Jokić fail to join. And a player traded mid-season gets one row per team plus a combined 2TM row, all sharing a rank, so James Harden appears three times unless the partial rows are dropped. Salaries arrive as strings like $62,587,158, which parse_number() handles.\nBecause VORP is a fixed function of two other scraped columns, \\((\\text{BPM} + 2) \\times \\text{MP} / (48 \\times 82)\\), recomputing it is a free test of the whole parse. Across 348 players the largest disagreement is rounding, which rules out shifted columns and numbers read as text."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#what-production-costs",
+    "href": "blog/posts/post2/index.html#what-production-costs",
+    "title": "Paying for wins",
+    "section": "What production costs",
+    "text": "What production costs\nJoining production to salary on player name matched 86 percent of contracts. The misses are not spelling errors: they are 2026 draft picks with no NBA minutes and stars who missed all of last season hurt, which is worth remembering when reading anything below about the top of the market.\n\n\n\n\n\n\n\n\nFigure 1: Total salary divided by total positive VORP, within each salary band. Players with at least 500 minutes in 2025-26, priced against their 2026-27 salary.\n\n\n\n\n\nProduction gets more expensive as salaries rise, which is what competition for scarce talent is supposed to do. The surprise is where the line stops rising. The most expensive production in the league is not at the top: it is in the $15 to $30 million band, at $19.9 million per point, above the $17.3 million that players earning more than $30 million cost.\nTwo rules explain the shape. At the top, the collective bargaining agreement caps individual salaries, so the best players in the league cannot be paid what they are worth. At the bottom, minimum and rookie scale contracts are set by rule rather than by bidding, and a young player who turns out to be good stays cheap for years. The $15 to $30 million band has neither protection. It is priced by open negotiation for players good enough to be paid but not good enough to be capped, and it is the one place where teams routinely pay full price."
+  },
+  {
+    "objectID": "blog/posts/post2/index.html#what-to-do-with-that",
+    "href": "blog/posts/post2/index.html#what-to-do-with-that",
+    "title": "Paying for wins",
+    "section": "What to do with that",
+    "text": "What to do with that\nFor a team with cap space and no path to a superstar, the advice is to spend at the extremes and stay out of the middle. Four players at $7 million who each produce half a point of VORP return twice what one player at $28 million producing a single point does, for the same money. The limit is the roster: 15 spots and 240 minutes a night, so a team that already has useful cheap players cannot simply buy more of them, and improving a good roster does eventually require paying for production per minute rather than per dollar.\nTwo caveats. VORP is a box score estimate and misses everything that does not end in a counted event, and the salary is for next season while the production is from last season, which will be wrong about exactly the players who change most.\nBoth scripts are in R/, the raw HTML snapshots and a provenance record in data/raw/, and the tidy file behind the chart in data/derived/. Only 01_acquire.R touches the network. Data from Basketball-Reference, accessed 20 September 2026."
+  },
+  {
+    "objectID": "blog/posts/post4/index.html",
+    "href": "blog/posts/post4/index.html",
+    "title": "Most of the productivity-pay gap is a unit conversion",
+    "section": "",
+    "text": "Output per hour in the US nonfarm business sector is 159 percent higher than it was in the first quarter of 1973. The average hourly wage of a production worker, deflated by consumer prices, is 3 percent higher. Those two numbers are the usual evidence that workers stopped sharing in what they produce.\nFigure 1: Labor productivity and the production worker’s real wage, 1973 Q1 = 100. The series start in 1964, where the wage data begins.\nThe two lines sit on top of each other until the mid-1970s and then separate, which is where the story usually stops. But productivity and that wage are not measured in the same units, and they do not refer to the same paycheck. Fixing each in turn closes most of the gap."
+  },
+  {
+    "objectID": "blog/posts/post4/index.html#the-deflator",
+    "href": "blog/posts/post4/index.html#the-deflator",
+    "title": "Most of the productivity-pay gap is a unit conversion",
+    "section": "The deflator",
+    "text": "The deflator\nProductivity is real output: what a sector produces, valued at the prices of the things it produces. The wage above is deflated by the consumer price index, which measures what a paycheck buys. A firm deciding whether an extra hour of labor is worth its cost compares both to the price of its own output, so for that comparison the output deflator is the consistent one.\nThe two price indices have not moved together. Housing, healthcare and education dominate consumer spending and barely appear in business output prices, while computers and imported goods pull the output deflator down. Swapping the consumer deflator for the output deflator, holding the pay measure fixed, is worth 56 index points."
+  },
+  {
+    "objectID": "blog/posts/post4/index.html#the-paycheck",
+    "href": "blog/posts/post4/index.html#the-paycheck",
+    "title": "Most of the productivity-pay gap is a unit conversion",
+    "section": "The paycheck",
+    "text": "The paycheck\nAHETPI covers production and nonsupervisory workers, roughly four fifths of private employment, and it counts wages only. Compensation adds employer-paid health insurance and retirement contributions, which is money the employer spends on labor whether or not it shows up in a wage, and it covers everyone including managers. Moving from one to the other is worth 59 points.\nThis wedge is not purely bookkeeping. Part of it is benefits, and part of it is that pay growth went to people above the production and nonsupervisory line. These series cannot separate the two, and the second part is a real distributional change rather than a measurement choice.\n\n\n\n\n\n\n\n\nFigure 2: The same gap, with each transformation added in turn. Each step up is one change of units or one change of pay concept.\n\n\n\n\n\nWhat survives both corrections is the distance between productivity and real compensation measured in the same prices: 42 points, or 27 percent of the original gap. That residual is labor’s share of output, and it is the only piece that means what the headline chart is usually taken to mean."
+  },
+  {
+    "objectID": "blog/posts/post4/index.html#when-each-piece-opened",
+    "href": "blog/posts/post4/index.html#when-each-piece-opened",
+    "title": "Most of the productivity-pay gap is a unit conversion",
+    "section": "When each piece opened",
+    "text": "When each piece opened\n\n\n\n\n\n\n\n\nFigure 3: The gap in Figure 1, split into three. The three lines add to the total at every date.\n\n\n\n\n\nThe three pieces arrived in order. The pay-concept wedge opened first, in the late 1970s, and had done most of its work by 2000 as employer health costs grew. The deflator wedge has widened at a near-constant rate since the early 1980s. The labor-share wedge, the one that actually describes workers getting a smaller slice, sat near zero for the first thirty years and only crossed ten points in 2005. It is now 42.\nSo the common summary, that pay stopped tracking productivity in the early 1970s, is pointing at the right chart and the wrong decade. Labor’s share of what it produced held up through the 1980s and 1990s. It started falling around 2000, which is a narrower claim, a more recent one, and a more useful one if the question is what changed."
+  },
+  {
+    "objectID": "blog/posts/post4/index.html#caveats",
+    "href": "blog/posts/post4/index.html#caveats",
+    "title": "Most of the productivity-pay gap is a unit conversion",
+    "section": "Caveats",
+    "text": "Caveats\nCompensation here is an average, so it is pulled up by pay at the top; the distance between average compensation and what a median worker earns is inequality rather than measurement, and it is sitting inside the pay-concept wedge. Productivity is gross of depreciation, and a net measure would close a few more points, since capital wears out faster than it used to. The 1973 base quarter is a convention rather than a fact about the data.\nBoth scripts are in R/, with the series list and the construction in README.md. Data from FRED, Federal Reserve Bank of St. Louis, accessed 6 October 2026."
   },
   {
     "objectID": "about.html",

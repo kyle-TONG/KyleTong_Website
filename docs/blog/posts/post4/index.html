@@ -6,8 +6,11 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Kyle Tong">
+<meta name="dcterms.date" content="2026-10-06">
+<meta name="description" content="The famous decoupling chart, taken apart into three pieces. The piece that is really about labor losing ground is the newest one, and it barely existed before 2000.">
 
-<title>Blog – Student Name</title>
+<title>Most of the productivity-pay gap is a unit conversion – Student Name</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -26,25 +29,23 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../site_libs/quarto-nav/headroom.min.js"></script>
-<script src="../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../">
-<script src="../site_libs/quarto-listing/list.min.js"></script>
-<script src="../site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/popper.min.js"></script>
-<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-6033a600180109c3731f6a886c29932c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-6033a600180109c3731f6a886c29932c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -72,67 +73,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
 
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-subtitle','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-subtitle","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
-
-<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../../../styles.css">
 </head>
 
 <body class="nav-fixed fullcontent quarto-light">
@@ -142,7 +85,7 @@ window.Quarto = {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="../index.html">
+    <a class="navbar-brand" href="../../../index.html">
     <span class="navbar-title">Student Name</span>
     </a>
   </div>
@@ -153,19 +96,19 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../index.html"> 
+    <a class="nav-link" href="../../../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../bio.html"> 
+    <a class="nav-link" href="../../../bio.html"> 
 <span class="menu-text">About Me</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../resume.html"> 
+    <a class="nav-link" href="../../../resume.html"> 
 <span class="menu-text">Resume</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../blog/index.html" aria-current="page"> 
+    <a class="nav-link" href="../../../blog/index.html"> 
 <span class="menu-text">Blog</span></a>
   </li>  
 </ul>
@@ -185,14 +128,37 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Blog</h1>
-</div>
+<h1 class="title">Most of the productivity-pay gap is a unit conversion</h1>
+<p class="subtitle lead">Output per hour is up 159 percent since 1973 and the production worker’s real wage is up 3. Two thirds of the distance is deflator choice and the definition of a paycheck.</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">macro</div>
+    <div class="quarto-category">data visualization</div>
+    <div class="quarto-category">FRED</div>
+  </div>
+  </div>
 
+<div>
+  <div class="description">
+    The famous decoupling chart, taken apart into three pieces. The piece that is really about labor losing ground is the newest one, and it barely existed before 2000.
+  </div>
+</div>
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Kyle Tong </p>
+          </div>
+  </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 6, 2026</p>
+    </div>
+  </div>
   
     
   </div>
@@ -202,127 +168,75 @@ window.Quarto = {
 </header>
 
 
+<p>Output per hour in the US nonfarm business sector is 159 percent higher than it was in the first quarter of 1973. The average hourly wage of a production worker, deflated by consumer prices, is 3 percent higher. Those two numbers are the usual evidence that workers stopped sharing in what they produce.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-gap" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-gap-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-gap-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-gap-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Labor productivity and the production worker’s real wage, 1973 Q1 = 100. The series start in 1964, where the wage data begins.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The two lines sit on top of each other until the mid-1970s and then separate, which is where the story usually stops. But productivity and that wage are not measured in the same units, and they do not refer to the same paycheck. Fixing each in turn closes most of the gap.</p>
+<section id="the-deflator" class="level2">
+<h2 class="anchored" data-anchor-id="the-deflator">The deflator</h2>
+<p>Productivity is real output: what a sector produces, valued at the prices of the things it produces. The wage above is deflated by the consumer price index, which measures what a paycheck buys. A firm deciding whether an extra hour of labor is worth its cost compares both to the price of its own output, so for that comparison the output deflator is the consistent one.</p>
+<p>The two price indices have not moved together. Housing, healthcare and education dominate consumer spending and barely appear in business output prices, while computers and imported goods pull the output deflator down. Swapping the consumer deflator for the output deflator, holding the pay measure fixed, is worth 56 index points.</p>
+</section>
+<section id="the-paycheck" class="level2">
+<h2 class="anchored" data-anchor-id="the-paycheck">The paycheck</h2>
+<p><code>AHETPI</code> covers production and nonsupervisory workers, roughly four fifths of private employment, and it counts wages only. Compensation adds employer-paid health insurance and retirement contributions, which is money the employer spends on labor whether or not it shows up in a wage, and it covers everyone including managers. Moving from one to the other is worth 59 points.</p>
+<p>This wedge is not purely bookkeeping. Part of it is benefits, and part of it is that pay growth went to people above the production and nonsupervisory line. These series cannot separate the two, and the second part is a real distributional change rather than a measurement choice.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-ladder" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ladder-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-ladder-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ladder-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: The same gap, with each transformation added in turn. Each step up is one change of units or one change of pay concept.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>What survives both corrections is the distance between productivity and real compensation measured in the same prices: 42 points, or 27 percent of the original gap. That residual is labor’s share of output, and it is the only piece that means what the headline chart is usually taken to mean.</p>
+</section>
+<section id="when-each-piece-opened" class="level2">
+<h2 class="anchored" data-anchor-id="when-each-piece-opened">When each piece opened</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-wedges" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-wedges-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-wedges-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-wedges-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: The gap in <a href="#fig-gap" class="quarto-xref">Figure&nbsp;1</a>, split into three. The three lines add to the total at every date.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The three pieces arrived in order. The pay-concept wedge opened first, in the late 1970s, and had done most of its work by 2000 as employer health costs grew. The deflator wedge has widened at a near-constant rate since the early 1980s. The labor-share wedge, the one that actually describes workers getting a smaller slice, sat near zero for the first thirty years and only crossed ten points in 2005. It is now 42.</p>
+<p>So the common summary, that pay stopped tracking productivity in the early 1970s, is pointing at the right chart and the wrong decade. Labor’s share of what it produced held up through the 1980s and 1990s. It started falling around 2000, which is a narrower claim, a more recent one, and a more useful one if the question is what changed.</p>
+</section>
+<section id="caveats" class="level2">
+<h2 class="anchored" data-anchor-id="caveats">Caveats</h2>
+<p>Compensation here is an average, so it is pulled up by pay at the top; the distance between average compensation and what a median worker earns is inequality rather than measurement, and it is sitting inside the pay-concept wedge. Productivity is gross of depreciation, and a net measure would close a few more points, since capital wears out faster than it used to. The 1973 base quarter is a convention rather than a fact about the data.</p>
+<p>Both scripts are in <code>R/</code>, with the series list and the construction in <code>README.md</code>. Data from FRED, Federal Reserve Bank of St.&nbsp;Louis, accessed 6 October 2026.</p>
 
 
+</section>
 
-
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="bWFjcm8lMkNkYXRhJTIwdmlzdWFsaXphdGlvbiUyQ0ZSRUQ=" data-listing-date-sort="1791262800000" data-listing-file-modified-sort="1791300588402" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="6" data-listing-word-count-sort="1076">
-<div class="thumbnail"><a href="../blog/posts/post4/index.html" class="no-external">
-
-<p class="card-img-top"><img loading='lazy' src="posts/post4/index_files/figure-html/fig-gap-1.png"  class="thumbnail-image card-img"/></p>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="../blog/posts/post4/index.html" class="no-external">Most of the productivity-pay gap is a unit conversion</a>
-</h3>
-<div class="listing-subtitle">
-<a href="../blog/posts/post4/index.html" class="no-external">Output per hour is up 159 percent since 1973 and the production worker’s real wage is up 3. Two thirds of the distance is deflator choice and the definition of a paycheck.</a>
-</div>
-<div class="delink listing-description"><a href="../blog/posts/post4/index.html" class="no-external">
-<p>The famous decoupling chart, taken apart into three pieces. The piece that is really about labor losing ground is the newest one, and it barely existed before 2000.</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="../blog/posts/post4/index.html" class="no-external">
-<div class="listing-date">
-Oct 6, 2026
-</div>
-<div class="listing-author">
-Kyle Tong
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="bGFib3IlMjBtYXJrZXQlMkNkYXRhJTIwdmlzdWFsaXphdGlvbiUyQ0lQVU1TJTIwQ1BT" data-listing-date-sort="1790571600000" data-listing-file-modified-sort="1790791245729" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1243">
-<div class="thumbnail"><a href="../blog/posts/post3/index.html" class="no-external">
-
-<p class="card-img-top"><img loading='lazy' src="posts/post3/index_files/figure-html/fig-groups-1.png"  class="thumbnail-image card-img"/></p>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="../blog/posts/post3/index.html" class="no-external">Participation fell, nobody stopped working</a>
-</h3>
-<div class="listing-subtitle">
-<a href="../blog/posts/post3/index.html" class="no-external">US labor-force participation is down four points since 1990, and up inside every age group over 25</a>
-</div>
-<div class="delink listing-description"><a href="../blog/posts/post3/index.html" class="no-external">
-<p>Participation is down four points since 1990. It is up inside every age group over 25. The difference is the age structure of the country.</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="../blog/posts/post3/index.html" class="no-external">
-<div class="listing-date">
-Sep 28, 2026
-</div>
-<div class="listing-author">
-Kyle Tong
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-categories="d2ViJTIwc2NyYXBpbmclMkNydmVzdCUyQ3Nwb3J0cyUyMGVjb25vbWljcw==" data-listing-date-sort="1789880400000" data-listing-file-modified-sort="1790003358473" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5" data-listing-word-count-sort="963">
-<div class="thumbnail"><a href="../blog/posts/post2/index.html" class="no-external">
-
-<p class="card-img-top"><img loading='lazy' src="posts/post2/index_files/figure-html/fig-cost-1.png"  class="thumbnail-image card-img"/></p>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="../blog/posts/post2/index.html" class="no-external">Paying for wins</a>
-</h3>
-<div class="listing-subtitle">
-<a href="../blog/posts/post2/index.html" class="no-external">Two web pages, 348 players, and the worst place in the NBA to spend money</a>
-</div>
-<div class="delink listing-description"><a href="../blog/posts/post2/index.html" class="no-external">
-<p>Scraping Basketball-Reference salaries and production to find out which part of the market sells a win cheapest. It is not the part teams spend most in.</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="../blog/posts/post2/index.html" class="no-external">
-<div class="listing-date">
-Sep 20, 2026
-</div>
-<div class="listing-author">
-Kyle Tong
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="3" data-categories="c3RhdGlzdGljcyUyQ2NhdXNhbCUyMGluZmVyZW5jZQ==" data-listing-date-sort="1789189200000" data-listing-file-modified-sort="1789270140305" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="4" data-listing-word-count-sort="762">
-<div class="thumbnail"><a href="../blog/posts/post1/index.html" class="no-external">
-
-<p class="card-img-top"><img loading='lazy' src="posts/post1/simpsons.jpg" alt="Scatter plot of Simpsons characters. Within each character the points slope downward, but the fitted line through all of them slopes upward."  class="thumbnail-image card-img"/></p>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="../blog/posts/post1/index.html" class="no-external">The average that disagrees with all of its parts</a>
-</h3>
-<div class="listing-subtitle">
-<a href="../blog/posts/post1/index.html" class="no-external">Simpson’s paradox, and why ratios refuse to add up</a>
-</div>
-<div class="delink listing-description"><a href="../blog/posts/post1/index.html" class="no-external">
-<p>Berkeley’s 1973 admissions gap disappears once you look at departments. The arithmetic behind that is simple, and it is a trap you can walk into with any pooled comparison.</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="../blog/posts/post1/index.html" class="no-external">
-<div class="listing-date">
-Sep 12, 2026
-</div>
-<div class="listing-author">
-Kyle Tong
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">No matching items</div>
-</div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
@@ -727,7 +641,7 @@ Kyle Tong
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p><img src="../images/UniversityofPennsylvania_FullLogo_RGB.png" class="img-fluid" width="100"></p>
+<p><img src="../../../images/UniversityofPennsylvania_FullLogo_RGB.png" class="img-fluid" width="100"></p>
 </div>   
     <div class="nav-footer-center">
 <p>© 2026 Student Name</p>
