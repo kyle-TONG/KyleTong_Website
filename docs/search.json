@@ -39,49 +39,126 @@
     "href": "blog/index.html",
     "title": "Blog",
     "section": "",
-    "text": "Most of the productivity-pay gap is a unit conversion\n\n\nOutput per hour is up 159 percent since 1973 and the production worker’s real wage is up 3. Two thirds of the distance is deflator choice and the definition of a paycheck.\n\n\nThe famous decoupling chart, taken apart into three pieces. The piece that is really about labor losing ground is the newest one, and it barely existed before 2000.\n\n\n\n\n\nOct 6, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nParticipation fell, nobody stopped working\n\n\nUS labor-force participation is down four points since 1990, and up inside every age group over 25\n\n\nParticipation is down four points since 1990. It is up inside every age group over 25. The difference is the age structure of the country.\n\n\n\n\n\nSep 28, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nPaying for wins\n\n\nTwo web pages, 348 players, and the worst place in the NBA to spend money\n\n\nScraping Basketball-Reference salaries and production to find out which part of the market sells a win cheapest. It is not the part teams spend most in.\n\n\n\n\n\nSep 20, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nThe average that disagrees with all of its parts\n\n\nSimpson’s paradox, and why ratios refuse to add up\n\n\nBerkeley’s 1973 admissions gap disappears once you look at departments. The arithmetic behind that is simple, and it is a trap you can walk into with any pooled comparison.\n\n\n\n\n\nSep 12, 2026\n\n\nKyle Tong\n\n\n\n\n\nNo matching items"
+    "text": "How much of Philadelphia’s campus poverty is students?\n\n\nOn the city’s poverty map, the blocks around Penn, Drexel and Temple look as poor as anywhere. A third or more of that is students. The rest is not.\n\n\nSplitting tract poverty rates into college students and everyone else shows that Philadelphia’s campus neighborhoods are poorer than the city, just not as poor as the map says.\n\n\n\n\n\nOct 18, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nMost of the productivity-pay gap is a unit conversion\n\n\nOutput per hour is up 159 percent since 1973 and the production worker’s real wage is up 3. Two thirds of the distance is deflator choice and the definition of a paycheck.\n\n\nThe famous decoupling chart, taken apart into three pieces. The piece that is really about labor losing ground is the newest one, and it barely existed before 2000.\n\n\n\n\n\nOct 6, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nAre Americans leaving work, or just getting older?\n\n\nUS labor-force participation is down four points since 1990. Splitting it into behavior and age structure shows which one did it.\n\n\nParticipation is down four points since 1990. It is up inside every age group over 25. The difference is the age structure of the country.\n\n\n\n\n\nSep 28, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nPaying for wins\n\n\nTwo web pages, 348 players, and the worst place in the NBA to spend money\n\n\nScraping Basketball-Reference salaries and production to find out which part of the market sells a win cheapest. It is not the part teams spend most in.\n\n\n\n\n\nSep 20, 2026\n\n\nKyle Tong\n\n\n\n\n\n\n\n\n\n\n\n\nThe average that disagrees with all of its parts\n\n\nSimpson’s paradox, and why ratios refuse to add up\n\n\nBerkeley’s 1973 admissions gap disappears once you look at departments. The arithmetic behind that is simple, and it is a trap you can walk into with any pooled comparison.\n\n\n\n\n\nSep 12, 2026\n\n\nKyle Tong\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "blog/posts/post3/index.html",
     "href": "blog/posts/post3/index.html",
-    "title": "Participation fell, nobody stopped working",
+    "title": "Are Americans leaving work, or just getting older?",
     "section": "",
-    "text": "The share of Americans aged 16 and over who are working or looking for work fell from 66.2 percent in March 1990 to 62.1 percent in March 2026. Over the same 36 years, participation rose in every age group above 25. Both statements come from the same 3.6 million CPS records, and the distance between them is the age structure of the country."
+    "text": "The share of Americans aged 16 and over who are working or looking for work fell from 66.2 percent in March 1990 to 62.1 percent in March 2026. A four-point fall sounds like a lot of people giving up on work.\nThe question this post answers is: did participation fall because Americans of a given age became less likely to work, or because more Americans are now at ages when people usually do not work? The first would be a labor-market problem. The second is demographic arithmetic that no labor-market policy can undo.\nThe national rate is a weighted average of age-group rates,\n\\[\\text{LFP}_t = \\sum_a s_{a,t} \\, p_{a,t},\\]\nwhere \\(p_{a,t}\\) is participation in age group \\(a\\) and \\(s_{a,t}\\) is that group’s share of the adult population. It can fall because the \\(p\\)’s fall (behavior) or because the \\(s\\)’s shift toward low-participation groups (composition). The three charts take these in turn: Figure 1 shows the rates, Figure 2 the shares, and Figure 3 recombines them to see which one moved the total."
   },
   {
     "objectID": "blog/posts/post3/index.html#the-data",
     "href": "blog/posts/post3/index.html#the-data",
-    "title": "Participation fell, nobody stopped working",
+    "title": "Are Americans leaving work, or just getting older?",
     "section": "The data",
-    "text": "The data\nEvery March Basic Monthly sample from IPUMS CPS between 1990 and 2026, with age, labor-force status and the person weight WTFINL. The CPS is a sample, and its weights exist to make that sample stand for the population, so every rate here is weighted:\n\nadults |&gt;\n  group_by(year, age_group) |&gt;\n  summarise(lfp        = weighted.mean(in_lf, wtfinl),\n            population = sum(wtfinl))\n\nThe universe is people 16 and over whose labor-force status is defined, which is what LABFORCE in (1, 2) selects. Weighting is not a formality here. The unweighted participation rate for March 2026 is 59.3 percent against a weighted 62.1, because people over 65 are 28.9 percent of the interviewed sample and 23.4 percent of the population. Older people answer the survey more often, and the CPS sample has shrunk from 112,130 adults in 1990 to 73,712, so the correction has grown."
+    "text": "The data\nEvery March Basic Monthly sample from IPUMS CPS, 1990 to 2026, with age, labor-force status and the person weight WTFINL. Every rate and share is weighted:\n\nadults |&gt;\n  group_by(year, age_group) |&gt;\n  summarise(lfp        = weighted.mean(in_lf, wtfinl),\n            population = sum(wtfinl))\n\nThe universe is people 16 and over with LABFORCE in (1, 2). Weighting matters here: the unweighted rate for March 2026 is 59.3 percent against a weighted 62.1, because people over 65 are 28.9 percent of the interviewed sample and 23.4 percent of the population. Older people answer the survey more often, which is exactly the group this post is about."
   },
   {
-    "objectID": "blog/posts/post3/index.html#participation-inside-each-age-group",
-    "href": "blog/posts/post3/index.html#participation-inside-each-age-group",
-    "title": "Participation fell, nobody stopped working",
-    "section": "Participation inside each age group",
-    "text": "Participation inside each age group\n\n\n\n\n\n\n\n\nFigure 1: Weighted labor-force participation by age group, March of each year. Three of the four lines end above where they started.\n\n\n\n\n\nWorkers aged 25 to 54 participate at 84.2 percent, against 83.4 percent in 1990. The 55 to 64 group went from 55.6 to 67.2 percent, and participation after 65 rose from 12.2 to 19.1 percent. The one group that pulled back is the youngest, down 11.1 points, most of which is school enrollment rather than idleness, though this extract cannot separate the two."
+    "objectID": "blog/posts/post3/index.html#did-behavior-change-participation-by-age",
+    "href": "blog/posts/post3/index.html#did-behavior-change-participation-by-age",
+    "title": "Are Americans leaving work, or just getting older?",
+    "section": "Did behavior change? Participation by age",
+    "text": "Did behavior change? Participation by age\n\n\n\n\n\n\n\n\nFigure 1: The behavior piece: weighted labor-force participation by age group, March of each year. Every group over 25 ends above where it started.\n\n\n\n\n\nWorkers aged 25 to 54 participate at 84.2 percent, against 83.4 percent in 1990. The 55 to 64 group went from 55.6 to 67.2 percent, and participation after 65 rose from 12.2 to 19.1 percent. The one group that pulled back is the youngest, down 11.1 points, probably mostly school enrollment, which this extract cannot confirm. On the behavioral side, then, the answer is no: past age 25, people work more than they did in 1990."
   },
   {
-    "objectID": "blog/posts/post3/index.html#the-population-behind-the-rates",
-    "href": "blog/posts/post3/index.html#the-population-behind-the-rates",
-    "title": "Participation fell, nobody stopped working",
-    "section": "The population behind the rates",
-    "text": "The population behind the rates\n\n\n\n\n\n\n\n\nFigure 2: Share of the population aged 16 and over, by age group. The 65+ group has gained eight points of the adult population since 1990.\n\n\n\n\n\nPeople over 65 were 15.4 percent of the adult population in 1990 and are 23.4 percent now. The prime-age group fell from 55.8 to 47.3 percent. Since participation after 65 is around a fifth and participation between 25 and 54 is above four fifths, that reshuffling moves the national average on its own, without anyone changing their mind about work."
+    "objectID": "blog/posts/post3/index.html#did-the-population-change-age-shares",
+    "href": "blog/posts/post3/index.html#did-the-population-change-age-shares",
+    "title": "Are Americans leaving work, or just getting older?",
+    "section": "Did the population change? Age shares",
+    "text": "Did the population change? Age shares\n\n\n\n\n\n\n\n\nFigure 2: The composition piece: share of the population aged 16 and over, by age group. The 65+ group, which participates least, gained eight points.\n\n\n\n\n\nPeople over 65 were 15.4 percent of the adult population in 1990 and are 23.4 percent now. The prime-age group fell from 55.8 to 47.3 percent. Since participation after 65 is around a fifth and participation between 25 and 54 is above four fifths, that reshuffling pulls the national average down on its own, without anyone changing their mind about work. On the composition side, the answer is yes."
   },
   {
-    "objectID": "blog/posts/post3/index.html#splitting-the-two-apart",
-    "href": "blog/posts/post3/index.html#splitting-the-two-apart",
-    "title": "Participation fell, nobody stopped working",
-    "section": "Splitting the two apart",
-    "text": "Splitting the two apart\n\n\n\n\n\n\n\n\nFigure 3: Aggregate participation, and two counterfactuals. The dashed line holds age shares at their 1990 values; the dotted line holds each group’s participation rate at its 1990 value.\n\n\n\n\n\nFreeze the age structure at its 1990 shares and let participation move as it actually did: the rate ends at 67.0 percent, slightly above where it started. Freeze participation instead and let only the age structure move: the rate falls to 60.0 percent. The entire decline in the headline number, and more, is demographics.\nThe actual line sits above the demographics-only line, which is the interesting residual. The groups gaining population share are the same ones raising their participation, so older Americans working longer has offset about 2.1 points of what aging would otherwise have taken out."
+    "objectID": "blog/posts/post3/index.html#which-one-moved-the-total",
+    "href": "blog/posts/post3/index.html#which-one-moved-the-total",
+    "title": "Are Americans leaving work, or just getting older?",
+    "section": "Which one moved the total?",
+    "text": "Which one moved the total?\n\n\n\n\n\n\n\n\nFigure 3: Putting them together: actual participation and two counterfactuals. The dashed line keeps 1990 age shares (behavior only); the dotted line keeps 1990 rates (aging only).\n\n\n\n\n\nFreeze the age structure at its 1990 shares and let participation move as it actually did: the rate ends at 67.0 percent, slightly above where it started. Freeze participation instead and let only the age structure move: the rate falls to 60.0 percent. The entire decline in the headline number, and more, is demographics.\nThe actual line sits above the aging-only line because the groups gaining population share are the ones raising their participation: older Americans working longer has offset about 2.1 points of what aging would otherwise have taken out."
+  },
+  {
+    "objectID": "blog/posts/post3/index.html#what-the-three-charts-say-together",
+    "href": "blog/posts/post3/index.html#what-the-three-charts-say-together",
+    "title": "Are Americans leaving work, or just getting older?",
+    "section": "What the three charts say together",
+    "text": "What the three charts say together\nFigure 1 rules out the behavioral story for everyone over 25. Figure 2 shows the population moving toward the age group with the lowest participation. Figure 3 shows that this shift alone accounts for the whole decline: with the 1990 age mix, participation today would be higher than it was in 1990. Americans are not leaving work; the country is getting older.\nTwo lessons follow. The headline rate is a poor gauge of labor-market health, because it falls whenever the population ages; the prime-age rate in Figure 1, now 84.2 percent and within 0.3 points of its 2000 peak, is the better signal. And because the youngest baby boomers do not turn 65 until 2029, the headline rate will probably keep drifting down even if every age group keeps working as much as it does now. A falling participation rate in the next few years should not, by itself, be read as Americans giving up on work."
   },
   {
     "objectID": "blog/posts/post3/index.html#caveats",
     "href": "blog/posts/post3/index.html#caveats",
-    "title": "Participation fell, nobody stopped working",
+    "title": "Are Americans leaving work, or just getting older?",
     "section": "Caveats",
-    "text": "Caveats\nEach point is one March, so 2021 carries the pandemic and single months are noisier than annual averages. The CPS reweights to new population controls after each census, which puts small breaks in the series around 2000, 2010 and 2020. And a shift-share split like this one describes an accounting identity, not a cause: it says how much of the change sits in the age structure, not why the age structure moved or why 60-year-olds now work.\nBoth scripts are in R/, with the extract definition and the weighting in README.md. The 72 MB extract stays out of the repository and only the aggregated tables in data/derived/ are committed, so anyone rebuilding this needs an IPUMS account and a run of 01_acquire.R.\nData accessed 28 September 2026. Sarah Flood, Miriam King, Renae Rodgers, Steven Ruggles, J. Robert Warren, Daniel Backman, Etienne Breton, Grace Cooper, Julia A. Rivera Drew, Stephanie Richards, David Van Riper, and Kari C.W. Williams. IPUMS CPS: Version 13.0 [dataset]. Minneapolis, MN: IPUMS, 2025. https://doi.org/10.18128/D030.V13.0"
+    "text": "Caveats\nEach point is one March, so 2021 carries the pandemic. Census-based reweighting leaves small breaks around 2000, 2010 and 2020. And a shift-share split is an accounting identity: it locates the change in the age structure but does not explain why 60-year-olds now work more.\nScripts are in R/ and details in README.md; the raw extract stays out of the repository, and 01_acquire.R rebuilds it with an IPUMS account.\nData accessed 28 September 2026. Sarah Flood, Miriam King, Renae Rodgers, Steven Ruggles, J. Robert Warren, Daniel Backman, Etienne Breton, Grace Cooper, Julia A. Rivera Drew, Stephanie Richards, David Van Riper, and Kari C.W. Williams. IPUMS CPS: Version 13.0 [dataset]. Minneapolis, MN: IPUMS, 2025. https://doi.org/10.18128/D030.V13.0"
+  },
+  {
+    "objectID": "blog/posts/post5/index.html",
+    "href": "blog/posts/post5/index.html",
+    "title": "How much of Philadelphia’s campus poverty is students?",
+    "section": "",
+    "text": "A poverty map of Philadelphia shows the neighborhoods around its three big universities in the same dark shade as Kensington and North Philadelphia. Part of that is real, and part of it is that college students report very little income.\nThe question: how much of the measured poverty around Philadelphia’s campuses is college students, and how poor are these neighborhoods without them?\nThe four figures answer this in sequence. Figure 1 is the map as usually drawn. Figure 2 shows where off-campus students live. Figure 3 redraws the first map, same color scale, with students removed. Figure 4 puts each campus tract’s two rates side by side."
+  },
+  {
+    "objectID": "blog/posts/post5/index.html#data",
+    "href": "blog/posts/post5/index.html#data",
+    "title": "How much of Philadelphia’s campus poverty is students?",
+    "section": "Data",
+    "text": "Data\nCensus tracts from the 2020-2024 American Community Survey 5-year estimates and Census TIGER/Line boundaries, both pulled with tidycensus. Table B14006 reports poverty status separately for undergraduates, graduate students and everyone else, so the split is arithmetic:\n\npov_all    = pov_poor / pov_universe\npov_noncol = (pov_poor - col_poor) / (pov_universe - col_pop)\n\nPoverty status is not measured for people in dormitories, so only off-campus students enter these numbers. Every map shows rates rather than counts, and tracts with fewer than 500 people in the relevant group are grey. Campus tracts, outlined in black, are tracts within a kilometre of Penn, Drexel or Temple where students make up at least a quarter of residents."
+  },
+  {
+    "objectID": "blog/posts/post5/index.html#the-map-as-usually-drawn",
+    "href": "blog/posts/post5/index.html#the-map-as-usually-drawn",
+    "title": "How much of Philadelphia’s campus poverty is students?",
+    "section": "The map as usually drawn",
+    "text": "The map as usually drawn\n\n\n\n\n\n\n\n\nFigure 1: Poverty rate, all residents, by census tract. Black outlines mark campus tracts; grey tracts have fewer than 500 residents (parks, the airport, industrial land).\n\n\n\n\n\nPooled, the campus tracts in University City have a poverty rate of 47.4 percent and those around Temple 52.1 percent, against 20.6 percent in the rest of the city."
+  },
+  {
+    "objectID": "blog/posts/post5/index.html#where-students-live",
+    "href": "blog/posts/post5/index.html#where-students-live",
+    "title": "How much of Philadelphia’s campus poverty is students?",
+    "section": "Where students live",
+    "text": "Where students live\n\n\n\n\n\n\n\n\nFigure 2: Off-campus college and graduate students as a share of residents.\n\n\n\n\n\nStudents cluster in two places, and they are poor on paper: 67 percent of students in the University City campus tracts and 86 percent around Temple fall below the poverty line, because most live on loans and family support that the survey does not count as income."
+  },
+  {
+    "objectID": "blog/posts/post5/index.html#the-same-map-without-students-up-close",
+    "href": "blog/posts/post5/index.html#the-same-map-without-students-up-close",
+    "title": "How much of Philadelphia’s campus poverty is students?",
+    "section": "The same map without students, up close",
+    "text": "The same map without students, up close\n\n\n\n\n\n\n\n\nFigure 3: Central Philadelphia, poverty rate for all residents (left) and for residents who are not college or graduate students (right). Same color scale as the first map; black outlines mark campus tracts, grey marks tracts with too few residents to measure.\n\n\n\n\n\nAway from the campuses almost nothing changes: the rest of the city goes from 20.6 to 20.4 percent. Around the campuses the dark patches fade without disappearing. Non-student poverty is 30.6 percent in University City and 31.0 percent around Temple.\n\n\n\n\n\n\n\n\nFigure 4: Each campus tract’s poverty rate with and without students. The dashed line is the non-student poverty rate for the rest of the city. Tract 88.01 has too few non-students to measure."
+  },
+  {
+    "objectID": "blog/posts/post5/index.html#what-the-four-figures-say-together",
+    "href": "blog/posts/post5/index.html#what-the-four-figures-say-together",
+    "title": "How much of Philadelphia’s campus poverty is students?",
+    "section": "What the four figures say together",
+    "text": "What the four figures say together\nFigure 1 overstates campus poverty, and Figure 2 shows why: the dark patches sit exactly where off-campus students live, and students are almost all poor on paper. But Figure 3 shows that removing them does not make the campus neighborhoods ordinary. Students account for between a third and two fifths of the measured rate, and the non-students who remain are about half again as likely to be poor as residents of the rest of the city. Philadelphia’s universities sit in poor neighborhoods; the map makes those neighborhoods look 55 to 68 percent poorer than they are.\nFigure 4 adds that this is not uniform. Tract 369.02, on the Center City side of University City, falls to roughly the city average once students are removed, as does tract 153 near Temple. Tract 147, southwest of Temple’s campus, stays above 60 percent.\nSo both obvious readings of the raw map are wrong. Taking it at face value overstates poverty near campus; dismissing campus-area poverty as “just students” misses that five of the seven measurable campus tracts are still above 20 percent without them. For anyone ranking neighborhoods by need, the correction takes one extra ACS table."
+  },
+  {
+    "objectID": "blog/posts/post5/index.html#caveats",
+    "href": "blog/posts/post5/index.html#caveats",
+    "title": "How much of Philadelphia’s campus poverty is students?",
+    "section": "Caveats",
+    "text": "Caveats\nTract estimates carry wide margins of error, and five-year pooling blends 2020 to 2024, including the pandemic. The one-kilometre and 25 percent thresholds that define a campus tract are judgment calls. And “poor on paper” is not the same as hardship for students, though for their non-student neighbors it usually is.\nScripts are in R/ and details in README.md. Data: U.S. Census Bureau, American Community Survey 2020-2024 5-year estimates and TIGER/Line cartographic boundary files, accessed 18 October 2026."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Junhao(Kyle)Tang",
+    "section": "",
+    "text": "Junhao(Kyle)Tang\nUniversity of Pennsylvaina\nWelcome to my personal website.\n\nQuick Links"
+  },
+  {
+    "objectID": "resume.html",
+    "href": "resume.html",
+    "title": "Resume",
+    "section": "",
+    "text": "Download my resume here:"
+  },
+  {
+    "objectID": "resume.html#resume-pdf",
+    "href": "resume.html#resume-pdf",
+    "title": "Resume",
+    "section": "Resume PDF",
+    "text": "Resume PDF"
   },
   {
     "objectID": "blog/posts/post1/index.html",
@@ -117,27 +194,6 @@
     "title": "The average that disagrees with all of its parts",
     "section": "Takeaway",
     "text": "Takeaway\nA pooled comparison is an average, and an average has weights. When two groups are averaged with different weights, the pooled numbers can point the opposite way from every group inside them. Before you read anything into a headline rate, find out what is being averaged and how the weights differ. The reversal is not a rare pathology; it is what happens whenever composition and outcome are related.\nAdmissions counts are UCBAdmissions in R’s datasets package, from Bickel, Hammel and O’Connell (1975), Science 187, 398–404."
-  },
-  {
-    "objectID": "resume.html",
-    "href": "resume.html",
-    "title": "Resume",
-    "section": "",
-    "text": "Download my resume here:"
-  },
-  {
-    "objectID": "resume.html#resume-pdf",
-    "href": "resume.html#resume-pdf",
-    "title": "Resume",
-    "section": "Resume PDF",
-    "text": "Resume PDF"
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Junhao(Kyle)Tang",
-    "section": "",
-    "text": "Junhao(Kyle)Tang\nUniversity of Pennsylvaina\nWelcome to my personal website.\n\nQuick Links"
   },
   {
     "objectID": "blog/posts/post2/index.html",

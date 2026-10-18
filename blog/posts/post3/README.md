@@ -1,6 +1,6 @@
 # Post 3: Participation and the age structure
 
-Source files for [Participation fell, nobody stopped working](index.qmd), published
+Source files for [Are Americans leaving work, or just getting older?](index.qmd), published
 28 September 2026. IPUMS CPS microdata is used to split the decline in US labor-force
 participation since 1990 into what people did and how the population aged.
 

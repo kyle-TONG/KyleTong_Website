@@ -1,0 +1,226 @@
+---
+title: "How much of Philadelphia's campus poverty is students?"
+subtitle: "On the city's poverty map, the blocks around Penn, Drexel and Temple look as poor as anywhere. A third or more of that is students. The rest is not."
+author: "Kyle Tong"
+date: 2026-10-18
+categories:
+  - GIS
+  - poverty
+  - Philadelphia
+description: "Splitting tract poverty rates into college students and everyone else shows that Philadelphia's campus neighborhoods are poorer than the city, just not as poor as the map says."
+execute:
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(here)
+library(sf)
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(scales)
+
+DERIVED <- here("blog", "posts", "post5", "data", "derived")
+
+tracts <- st_read(file.path(DERIVED, "phl_tracts.gpkg"), quiet = TRUE)
+pooled <- read_csv(file.path(DERIVED, "pooled_rates.csv"), show_col_types = FALSE)
+
+campus_tracts <- filter(tracts, !is.na(campus_area))
+
+labels <- tibble(label = c("University City", "Temple"),
+                 lon = c(-75.212, -75.128), lat = c(39.946, 39.986)) |>
+  st_as_sf(coords = c("lon", "lat"), crs = 4326) |>
+  st_transform(st_crs(tracts))
+
+# Window for the zoomed comparison: both campuses plus about 2.5 km around.
+zoom <- st_bbox(st_buffer(st_union(campus_tracts), 2500))
+
+p   <- function(x, d = 1) formatC(100 * x, format = "f", digits = d)
+grp <- function(g, v) pooled[[v]][pooled$group == g]
+
+POV_LIMITS <- c(0, max(c(tracts$pov_all, tracts$pov_noncol), na.rm = TRUE))
+
+tract_map <- function(var, fill_name, scale) {
+  ggplot(tracts) +
+    geom_sf(aes(fill = .data[[var]]), colour = "white", linewidth = 0.05) +
+    geom_sf(data = campus_tracts, fill = NA, colour = "black", linewidth = 0.45) +
+    geom_sf_label(data = labels, aes(label = label), size = 3,
+                  fontface = "bold", fill = "white", label.size = 0) +
+    scale +
+    labs(fill = fill_name, x = NULL, y = NULL) +
+    theme_void(base_size = 11) +
+    theme(legend.position = "right")
+}
+
+pov_scale <- scale_fill_viridis_c(option = "rocket", direction = -1,
+                                  limits = POV_LIMITS, labels = percent,
+                                  na.value = "grey85")
+```
+
+A poverty map of Philadelphia shows the neighborhoods around its three big universities in
+the same dark shade as Kensington and North Philadelphia. Part of that is real, and part of
+it is that college students report very little income.
+
+**The question: how much of the measured poverty around Philadelphia's campuses is college
+students, and how poor are these neighborhoods without them?**
+
+The four figures answer this in sequence. @fig-all is the map as usually drawn.
+@fig-students shows where off-campus students live. @fig-noncol redraws the first map,
+same color scale, with students removed. @fig-dumbbell puts each campus tract's two rates
+side by side.
+
+## Data
+
+Census tracts from the 2020-2024 American Community Survey 5-year estimates and Census
+TIGER/Line boundaries, both pulled with `tidycensus`. Table B14006 reports poverty status
+separately for undergraduates, graduate students and everyone else, so the split is
+arithmetic:
+
+```{r}
+#| label: split
+#| eval: false
+
+pov_all    = pov_poor / pov_universe
+pov_noncol = (pov_poor - col_poor) / (pov_universe - col_pop)
+```
+
+Poverty status is not measured for people in dormitories, so only off-campus students
+enter these numbers. Every map shows rates rather than counts, and tracts with fewer than
+500 people in the relevant group are grey. Campus tracts, outlined in black, are tracts
+within a kilometre of Penn, Drexel or Temple where students make up at least a quarter of
+residents.
+
+## The map as usually drawn
+
+```{r}
+#| label: fig-all
+#| fig-cap: "Poverty rate, all residents, by census tract. Black outlines mark campus tracts; grey tracts have fewer than 500 residents (parks, the airport, industrial land)."
+#| fig-width: 7
+#| fig-height: 6.2
+#| echo: false
+
+tract_map("pov_all", "poverty rate", pov_scale)
+```
+
+Pooled, the campus tracts in University City have a poverty rate of
+`r p(grp("University City", "pov_all"))` percent and those around Temple
+`r p(grp("Temple", "pov_all"))` percent, against `r p(grp("Rest of city", "pov_all"))`
+percent in the rest of the city.
+
+## Where students live
+
+```{r}
+#| label: fig-students
+#| fig-cap: "Off-campus college and graduate students as a share of residents."
+#| fig-width: 7
+#| fig-height: 6.2
+#| echo: false
+
+tract_map("student_share", "students",
+          scale_fill_viridis_c(option = "mako", direction = -1, labels = percent,
+                               na.value = "grey85"))
+```
+
+Students cluster in two places, and they are poor on paper:
+`r p(grp("University City", "pov_college"), 0)` percent of students in the University City
+campus tracts and `r p(grp("Temple", "pov_college"), 0)` percent around Temple fall below
+the poverty line, because most live on loans and family support that the survey does not count
+as income.
+
+## The same map without students, up close
+
+```{r}
+#| label: fig-noncol
+#| fig-cap: "Central Philadelphia, poverty rate for all residents (left) and for residents who are not college or graduate students (right). Same color scale as the first map; black outlines mark campus tracts, grey marks tracts with too few residents to measure."
+#| fig-width: 8
+#| fig-height: 4.2
+#| echo: false
+
+both <- bind_rows(
+  mutate(tracts, panel = "all residents", rate = pov_all),
+  mutate(tracts, panel = "without students", rate = pov_noncol)
+)
+
+ggplot(both) +
+  geom_sf(aes(fill = rate), colour = "white", linewidth = 0.1) +
+  geom_sf(data = campus_tracts, fill = NA, colour = "black", linewidth = 0.5) +
+  geom_sf_label(data = labels, aes(label = label), size = 2.8,
+                fontface = "bold", fill = "white", label.size = 0) +
+  facet_wrap(~ panel) +
+  pov_scale +
+  coord_sf(xlim = zoom[c("xmin", "xmax")], ylim = zoom[c("ymin", "ymax")],
+           datum = NA) +
+  labs(fill = "poverty rate", x = NULL, y = NULL) +
+  theme_void(base_size = 11) +
+  theme(strip.text = element_text(face = "bold", size = 11,
+                                  margin = margin(b = 4)))
+```
+
+Away from the campuses almost nothing changes: the rest of the city goes from
+`r p(grp("Rest of city", "pov_all"))` to `r p(grp("Rest of city", "pov_noncol"))` percent.
+Around the campuses the dark patches fade without disappearing. Non-student poverty is
+`r p(grp("University City", "pov_noncol"))` percent in University City and
+`r p(grp("Temple", "pov_noncol"))` percent around Temple.
+
+```{r}
+#| label: fig-dumbbell
+#| fig-cap: "Each campus tract's poverty rate with and without students. The dashed line is the non-student poverty rate for the rest of the city. Tract 88.01 has too few non-students to measure."
+#| fig-width: 7
+#| fig-height: 3.4
+#| echo: false
+
+campus_tracts |>
+  st_drop_geometry() |>
+  filter(!is.na(pov_noncol)) |>
+  mutate(tract = paste0(sub("Census Tract ", "Tract ", NAMELSAD), " (", campus_area, ")"),
+         tract = reorder(tract, pov_noncol)) |>
+  ggplot(aes(y = tract)) +
+  geom_vline(xintercept = grp("Rest of city", "pov_noncol"),
+             linetype = "dashed", colour = "grey50") +
+  geom_segment(aes(x = pov_noncol, xend = pov_all, yend = tract), colour = "grey70") +
+  geom_point(aes(x = pov_all, colour = "all residents"), size = 2.8) +
+  geom_point(aes(x = pov_noncol, colour = "without students"), size = 2.8) +
+  scale_colour_manual(values = c("all residents" = "#D55E00",
+                                 "without students" = "#0072B2"), name = NULL) +
+  scale_x_continuous(labels = percent, limits = c(0, NA)) +
+  labs(x = "poverty rate", y = NULL) +
+  theme_minimal(base_size = 11) +
+  theme(legend.position = "top", panel.grid.major.y = element_blank())
+```
+
+## What the four figures say together
+
+@fig-all overstates campus poverty, and @fig-students shows why: the dark patches sit
+exactly where off-campus students live, and students are almost all poor on paper. But
+@fig-noncol shows that removing them does not make the campus neighborhoods ordinary.
+Students account for between a third and two fifths of the measured rate, and the
+non-students who remain are about half again as likely to be poor as residents of the rest
+of the city. Philadelphia's universities sit in poor neighborhoods; the map makes those
+neighborhoods look
+`r p(grp("University City", "pov_all") / grp("University City", "pov_noncol") - 1, 0)` to
+`r p(grp("Temple", "pov_all") / grp("Temple", "pov_noncol") - 1, 0)` percent poorer than
+they are.
+
+@fig-dumbbell adds that this is not uniform. Tract 369.02, on the Center City side of
+University City, falls to roughly the city average once students are removed, as does
+tract 153 near Temple. Tract 147, southwest of Temple's campus, stays above 60 percent.
+
+So both obvious readings of the raw map are wrong. Taking it at face value overstates
+poverty near campus; dismissing campus-area poverty as "just students" misses that five of
+the seven measurable campus tracts are still above 20 percent without them. For anyone
+ranking neighborhoods by need, the correction takes one extra ACS table.
+
+## Caveats
+
+Tract estimates carry wide margins of error, and five-year pooling blends 2020 to 2024,
+including the pandemic. The one-kilometre and 25 percent thresholds that define a campus
+tract are judgment calls. And "poor on paper" is not the same as hardship for students,
+though for their non-student neighbors it usually is.
+
+Scripts are in `R/` and details in `README.md`. Data: U.S. Census Bureau, American
+Community Survey 2020-2024 5-year estimates and TIGER/Line cartographic boundary files,
+accessed 18 October 2026.
