@@ -12,3 +12,8 @@
 blog/posts/post3/data/raw/*.dat.gz
 blog/posts/post3/data/raw/*.dat
 blog/posts/post3/data/raw/*.xml
+
+# PSID data cannot be redistributed. Raw downloads and prepared CSVs for post 6 stay
+# local; only the rendered page is published.
+blog/posts/post6/data/raw/
+blog/posts/post6/data/psid/
