@@ -1,0 +1,213 @@
+---
+title: "Are poor countries catching up?"
+subtitle: "For most of the last sixty years, no. Since 2000, yes, and whether you count countries or people changes the answer by twenty years."
+author: "Kyle Tong"
+date: 2026-10-26
+categories:
+  - growth
+  - data visualization
+  - Plotly
+description: "An interactive look at sixty years of cross-country growth. Drag through the decades and watch the relationship between how poor a country was and how fast it grew turn upside down."
+jupyter: anaconda3
+execute:
+  warning: false
+  message: false
+  echo: false
+---
+
+```{python}
+import warnings
+warnings.filterwarnings("ignore")
+
+import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
+
+growth = pd.read_csv("data/derived/decade_growth.csv")
+slopes = pd.read_csv("data/derived/convergence_slopes.csv")
+
+DECADES = list(slopes["decade"])
+CONTINENTS = ["Africa", "Asia", "Europe", "North America", "South America", "Oceania"]
+COLORS = {"Africa": "#D55E00", "Asia": "#0072B2", "Europe": "#009E73",
+          "North America": "#CC79A7", "South America": "#E69F00", "Oceania": "#56B4E9"}
+
+def quartile_growth(decade):
+    g = growth[growth["decade"] == decade]
+    q = pd.qcut(g["gdp_pc_start"], 4, labels=False)
+    return g.loc[q == 0, "growth"].mean(), g.loc[q == 3, "growth"].mean()
+
+s = slopes.set_index("decade")
+
+afr80 = growth[(growth["decade"] == "1980s") & (growth["continent"] == "Africa")]
+afr80_n, afr80_shrank = len(afr80), int((afr80["growth"] < 0).sum())
+poor60, rich60 = quartile_growth("1960s")
+poor00, rich00 = quartile_growth("2000s")
+```
+
+Textbook growth theory makes a simple prediction: poor countries should grow faster than
+rich ones, because capital is scarce where they are and technology can be borrowed rather
+than invented. If that holds, the gap between rich and poor countries shrinks over time,
+which economists call convergence.
+
+**The question: in which decades did poor countries actually grow faster than rich ones,
+and does the answer change if we count people instead of countries?**
+
+## The data
+
+Penn World Table 11.0 covers 185 economies from 1950 to 2023. For each decade since 1960,
+I take every country with at least a million people and compute two things. Income at the
+start of the decade uses PWT's expenditure-side GDP at purchasing-power parity, divided by
+population, which is built to compare living standards *across* countries. Growth over the
+decade uses national-accounts GDP per person, which is built to compare a country with
+*itself* over time, expressed as an average annual rate. The 2010s stop in 2019, before the
+pandemic. Using two different series also keeps any error in the income level from
+mechanically showing up in the growth rate.
+
+## Sixty years in one chart
+
+Each bubble is a country, sized by population. Drag the slider or press play to move
+through the decades; hover over a bubble to see which country it is; click a continent in
+the legend to hide or isolate it. The dashed line is the fitted relationship for that
+decade, with every country counting once.
+
+```{python}
+#| label: fig-scatter
+#| fig-cap: "Income at the start of each decade against average annual growth of GDP per person during it. Bubble size is population. Source: Penn World Table 11.0."
+
+max_pop = growth["pop_start"].max()
+sizeref = 2 * max_pop / 55 ** 2
+
+def label(decade):
+    return (f"<b>{decade}</b>: slope {s.loc[decade, 'slope']:+.2f} "
+            f"({'poorer countries grew faster' if s.loc[decade, 'slope'] < -0.3 else 'richer countries grew faster' if s.loc[decade, 'slope'] > 0.3 else 'no clear pattern'})")
+
+def decade_traces(decade):
+    g = growth[growth["decade"] == decade]
+    traces = []
+    for c in CONTINENTS:
+        d = g[g["continent"] == c]
+        traces.append(go.Scatter(
+            x=d["gdp_pc_start"], y=d["growth"], mode="markers", name=c, legendgroup=c,
+            text=d["country"], customdata=d[["pop_start"]],
+            marker=dict(size=d["pop_start"], sizemode="area", sizeref=sizeref, sizemin=4,
+                        color=COLORS[c], opacity=0.75, line=dict(width=0.6, color="white")),
+            hovertemplate=("<b>%{text}</b><br>GDP per person at start: $%{x:,.0f}"
+                           "<br>growth: %{y:.1f}% a year"
+                           "<br>population: %{customdata[0]:,.0f} million<extra></extra>")))
+    lx = np.log(g["gdp_pc_start"])
+    b, a = np.polyfit(lx, g["growth"], 1)
+    xs = np.exp(np.linspace(lx.min(), lx.max(), 50))
+    traces.append(go.Scatter(x=xs, y=a + b * np.log(xs), mode="lines", hoverinfo="skip",
+                             name="fitted line", line=dict(color="black", width=2, dash="dash")))
+    # The decade's slope, drawn as a text trace so it moves with the animation
+    # frames without touching the layout (layout changes reset the slider).
+    traces.append(go.Scatter(x=[400], y=[12.6], mode="text", text=[label(decade)],
+                             textposition="middle right", hoverinfo="skip", showlegend=False,
+                             textfont=dict(size=14)))
+    return traces
+
+fig = go.Figure(
+    data=decade_traces(DECADES[0]),
+    frames=[go.Frame(data=decade_traces(d), name=d) for d in DECADES],
+)
+
+steps = [dict(method="animate", label=d,
+              args=[[d], dict(mode="immediate", frame=dict(duration=0, redraw=True),
+                              transition=dict(duration=300))]) for d in DECADES]
+
+fig.update_layout(
+    title=dict(text="Starting income and growth over the following decade", x=0.01,
+               y=0.985, yanchor="top", font=dict(size=15)),
+    template="simple_white", height=640,
+    xaxis=dict(type="log", title="GDP per person at start of decade (2021 PPP dollars, log scale)",
+               range=[np.log10(350), np.log10(300000)], tickformat="$,.0f"),
+    yaxis=dict(title="average annual growth, % per person", range=[-15, 14],
+               zeroline=True, zerolinecolor="#bbbbbb"),
+    legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0, title=None,
+                itemsizing="constant"),
+    margin=dict(t=140, b=40, l=70, r=20),
+    sliders=[dict(active=0, steps=steps, x=0.1, len=0.9, y=0, yanchor="top",
+                  pad=dict(t=55, b=10),
+                  currentvalue=dict(prefix="decade: ", visible=True, xanchor="left",
+                                    font=dict(size=13)))],
+    updatemenus=[dict(type="buttons", showactive=False, direction="left",
+                      x=0.1, xanchor="right", y=0, yanchor="top", pad=dict(t=65, r=10),
+                      buttons=[dict(label="▶ play", method="animate",
+                                    args=[None, dict(frame=dict(duration=1200, redraw=True),
+                                                     transition=dict(duration=400),
+                                                     fromcurrent=True)])])],
+)
+fig.show()
+```
+
+In the 1960s the line slopes *up*: the richest quarter of countries grew
+`{python} f"{rich60:.1f}"` percent a year and the poorest quarter
+`{python} f"{poor60:.1f}"`. The world was diverging. The 1980s and 1990s are flat. Then in
+the 2000s the line tips clearly downward: the poorest quarter grew
+`{python} f"{poor00:.1f}"` percent a year against `{python} f"{rich00:.1f}"` for the
+richest. The 2010s keep the downward slope, though less steeply.
+
+## Countries or people
+
+Every country counts once in that fit, so Malawi weighs as much as India. Counting people
+instead, by weighting each country by its population, tells a different story:
+
+```{python}
+#| label: fig-slopes
+#| fig-cap: "Convergence slope by decade: how many percentage points of annual growth a country gained or lost for each log point (about 2.7 times) of higher starting income. Bars are 95 percent confidence intervals."
+
+fig2 = go.Figure()
+for col, se, name, color in [("slope", "se", "each country counts once", "#555555"),
+                             ("slope_pop", "se_pop", "each person counts once", "#0072B2")]:
+    fig2.add_trace(go.Scatter(
+        x=slopes["decade"], y=slopes[col], mode="lines+markers", name=name,
+        line=dict(color=color, width=2.5), marker=dict(size=9),
+        error_y=dict(type="data", array=1.96 * slopes[se], color=color, thickness=1.2),
+        customdata=slopes[["countries"]],
+        hovertemplate=(f"<b>{name}</b><br>%{{x}}: slope %{{y:+.2f}}"
+                       "<br>%{customdata[0]} countries<extra></extra>")))
+fig2.add_hline(y=0, line_color="#999999", line_dash="dot")
+fig2.add_annotation(x=0, y=1.6, xref="x", text="above zero: richer countries grew faster",
+                    showarrow=False, xanchor="left", font=dict(color="#888888", size=11))
+fig2.add_annotation(x=0, y=-2.0, xref="x", text="below zero: poorer countries grew faster",
+                    showarrow=False, xanchor="left", font=dict(color="#888888", size=11))
+fig2.update_layout(template="simple_white", height=400, yaxis_title="convergence slope",
+                   yaxis_range=[-2.3, 1.9], legend=dict(orientation="h", y=1.12, x=0),
+                   margin=dict(t=60))
+fig2.show()
+```
+
+Weighted by people, convergence starts in the 1980s, twenty years earlier, with a slope of
+`{python} f"{s.loc['1980s', 'slope_pop']:+.2f}"` against
+`{python} f"{s.loc['1980s', 'slope']:+.2f}"` for countries. Go back to the first chart, set
+it to the 1980s and hover over the two largest bubbles: China and India, among the poorest
+countries in 1980, growing at 7 and 3 percent a year. Then click everything but Africa off
+in the legend: `{python} f"{afr80_shrank}"` of Africa's `{python} f"{afr80_n}"` economies
+shrank per person through that decade. Together
+those two facts are the whole gap between the lines.
+
+## What it means
+
+Whether the world is converging depends on what you are asking. If the question is about
+people, about how many of the world's poor live in economies that are catching up, the
+answer has been yes since the 1980s, largely because of two countries. If the question is
+whether a typical poor country can expect to catch up, the answer was no for forty years
+and has been yes only since about 2000, a result Patel, Sandefur and Subramanian (2021)
+find across several datasets. It is still young, and it was weaker in the 2010s than in the
+2000s.
+
+These are unconditional comparisons: they do not hold education, institutions or commodity
+prices fixed, and the set of countries with data grows from
+`{python} f"{s.loc['1960s', 'countries']}"` in the 1960s to
+`{python} f"{s.loc['2010s', 'countries']}"` in the 2010s.
+
+## Data and references
+
+Feenstra, Robert C., Robert Inklaar, and Marcel P. Timmer. 2015. "The Next Generation of
+the Penn World Table." *American Economic Review* 105 (10): 3150-3182. Data: PWT 11.0,
+doi:10.34894/FABVLR, CC BY 4.0. Continents from Our World in Data.
+
+Patel, Dev, Justin Sandefur, and Arvind Subramanian. 2021. "The New Era of Unconditional
+Convergence." *Journal of Development Economics* 152: 102687.
+
+Scripts are in `py/`; see `README.md`.

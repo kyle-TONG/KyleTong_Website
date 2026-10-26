@@ -1,0 +1,3 @@
+file,source,url,doi,license,bytes,accessed_at
+pwt110.dta,"Penn World Table 11.0, Groningen Growth and Development Centre",https://dataverse.nl/api/access/datafile/554030,10.34894/FABVLR,CC BY 4.0,3739965,2026-10-26 18:19:23 UTC
+owid_continents.csv,"Our World in Data, continents according to Our World in Data",https://ourworldindata.org/grapher/continents-according-to-our-world-in-data.csv?v=1&csvType=full&useColumnShortNames=true,,CC BY 4.0,7940,2026-10-26 18:19:23 UTC

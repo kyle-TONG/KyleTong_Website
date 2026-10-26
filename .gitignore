@@ -17,3 +17,6 @@ blog/posts/post3/data/raw/*.xml
 # local; only the rendered page is published.
 blog/posts/post6/data/raw/
 blog/posts/post6/data/psid/
+
+# Local preview config for Claude Code, not part of the site
+.claude/
