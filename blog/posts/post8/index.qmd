@@ -1,0 +1,267 @@
+---
+title: "What a confidence interval promises"
+subtitle: "Bootstrap intervals, coverage and p-values, built from simulation and one population of wages"
+author: "Kyle Tong"
+date: 2026-11-02
+categories:
+  - statistics
+  - simulation
+  - interactive
+description: "Resample one sample to get a confidence interval, repeat the whole experiment a thousand times to see what the 95 percent means, then build a null distribution to see what a p-value measures."
+execute:
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(ggplot2)
+theme_set(theme_minimal(base_size = 12))
+
+set.seed(2026)
+pop <- rlnorm(1e6, meanlog = log(25), sdlog = 0.6)   # hourly wages, skewed right
+mu  <- mean(pop)
+n   <- 50
+dol <- function(x) paste0(ifelse(x < 0, "-$", "$"), formatC(abs(x), format = "f", digits = 2))
+```
+
+We almost never see a population, only a sample from it. Every average computed from a
+sample would have come out differently with a different sample, and statistical inference
+is the business of saying how differently.
+
+**The question: when we compute an average from one sample, how much should we trust it,
+and how large must a difference be before we call it real?**
+
+Simulation answers both by doing what theory only describes: drawing the sample again and
+again. The population here is a million hourly wages, skewed right like real wages, with a
+true mean of `r dol(mu)`. @fig-boot builds one confidence interval, the first interactive
+chart repeats that a few hundred times to show what "95 percent" means, @fig-null builds a
+null distribution for a hypothesis test, and the second interactive chart shows how sample
+size decides whether a real effect gets detected.
+
+## A bootstrap interval from one sample
+
+Draw 50 workers. The bootstrap treats that sample as a stand-in for the population: draw 50
+from it *with replacement*, compute the mean, and repeat 5,000 times. The spread of those
+means estimates how much the sample mean would vary across real samples.
+
+```{r}
+#| label: bootstrap
+x <- sample(pop, n)
+boot_means <- replicate(5000, mean(sample(x, replace = TRUE)))
+ci <- quantile(boot_means, c(0.025, 0.975))
+```
+
+```{r}
+#| label: fig-boot
+#| fig-cap: "Bootstrap distribution of the mean wage from one sample of 50. Shaded: the middle 95 percent, which is the percentile confidence interval. Dashed: the true population mean."
+#| fig-width: 7
+#| fig-height: 3.2
+#| echo: false
+ggplot(data.frame(m = boot_means), aes(m)) +
+  geom_histogram(aes(fill = m >= ci[1] & m <= ci[2]), bins = 60, colour = "white",
+                 linewidth = 0.1, show.legend = FALSE) +
+  scale_fill_manual(values = c(`TRUE` = "#0072B2", `FALSE` = "#c6dbef")) +
+  geom_vline(xintercept = mu, linetype = "dashed") +
+  annotate("text", x = mu, y = Inf, label = "true mean", vjust = 1.5, hjust = -0.1, size = 3.3) +
+  scale_x_continuous(labels = scales::dollar) +
+  labs(x = "mean wage in a bootstrap resample", y = "resamples")
+```
+
+The sample mean is `r dol(mean(x))` and the 95 percent interval runs from `r dol(ci[1])` to
+`r dol(ci[2])`. It happens to contain the true mean. The question is how often that happens.
+
+## What "95 percent" means
+
+The 95 percent is a property of the procedure, not of any one interval: draw a sample, build
+the interval, and the interval contains the truth in about 95 percent of repetitions. Here
+is the whole procedure repeated a thousand times:
+
+```{r}
+#| label: coverage
+covers <- replicate(1000, {
+  s <- sample(pop, n)
+  b <- rowMeans(matrix(sample(s, n * 1000, replace = TRUE), nrow = 1000))
+  q <- quantile(b, c(0.025, 0.975))
+  q[1] <= mu & mu <= q[2]
+})
+```
+
+`r round(100 * mean(covers), 1)` percent of the intervals contain the true mean, a little
+short of 95. The chart below runs the same experiment in your browser. Each vertical line is
+one sample's interval; orange ones miss. Lower the sample size and the miss rate climbs well
+past 5 percent, because with skewed data a small sample rarely includes the few high earners
+that pull the mean up, so the bootstrap distribution is too narrow. The promise is only
+approximately kept, and only once samples are large.
+
+```{ojs}
+//| echo: false
+viewof n1 = Inputs.range([5, 200], {value: 50, step: 1, label: "sample size"})
+viewof level1 = Inputs.range([0.80, 0.99], {value: 0.95, step: 0.01, label: "confidence level"})
+viewof reps1 = Inputs.range([50, 400], {value: 200, step: 50, label: "repeated samples"})
+viewof seed1 = Inputs.button("draw new samples", {value: 1, reduce: v => v + 1})
+```
+
+```{ojs}
+//| echo: false
+TRUE_MEAN = 25 * Math.exp(0.6 ** 2 / 2)
+
+intervals = {
+  const rng = d3.randomLcg(seed1 * 7919 + 13);
+  const draw = d3.randomLogNormal.source(rng)(Math.log(25), 0.6);
+  const B = 400, a = (1 - level1) / 2;
+  const s = new Float64Array(n1), bm = new Float64Array(B), out = [];
+  for (let r = 0; r < reps1; r++) {
+    let sum = 0;
+    for (let i = 0; i < n1; i++) { s[i] = draw(); sum += s[i]; }
+    for (let b = 0; b < B; b++) {
+      let t = 0;
+      for (let i = 0; i < n1; i++) t += s[Math.floor(rng() * n1)];
+      bm[b] = t / n1;
+    }
+    bm.sort();
+    const lo = d3.quantileSorted(bm, a), hi = d3.quantileSorted(bm, 1 - a);
+    out.push({sample: r + 1, mean: sum / n1, lo, hi,
+              result: lo <= TRUE_MEAN && TRUE_MEAN <= hi ? "contains the true mean" : "misses"});
+  }
+  return out;
+}
+
+hits1 = intervals.filter(d => d.result !== "misses").length
+
+md`**${hits1} of ${reps1}** intervals (${(100 * hits1 / reps1).toFixed(1)} percent) contain the true mean, against a promised ${Math.round(100 * level1)} percent.`
+```
+
+```{ojs}
+//| echo: false
+Plot.plot({
+  height: 320, marginLeft: 50,
+  x: {label: "sample", ticks: []},
+  y: {label: "hourly wage ($)", domain: [10, 60]},
+  color: {domain: ["contains the true mean", "misses"], range: ["#9ecae1", "#D55E00"], legend: true},
+  marks: [
+    Plot.ruleX(intervals, {x: "sample", y1: "lo", y2: "hi", stroke: "result",
+                           strokeWidth: reps1 > 250 ? 1 : 2}),
+    Plot.ruleY([TRUE_MEAN], {strokeDasharray: "4,3"})
+  ]
+})
+```
+
+## A hypothesis test from a null distribution
+
+Now a policy question. A job-training program is tested on 50 workers, compared with 50
+who did not take it. In this simulation the program genuinely raises wages by \$2 an hour.
+The null hypothesis is that it does nothing.
+
+If the null were true, both groups would be drawn from the same population, so we can
+simulate exactly what the difference in means looks like when nothing is going on, 10,000
+times. (With real data, where the population is unknown, shuffling the treatment labels
+builds the same distribution from the sample alone.)
+
+```{r}
+#| label: test
+control  <- sample(pop, n)
+treated  <- sample(pop, n) + 2
+observed <- mean(treated) - mean(control)
+
+null_diffs <- replicate(10000, mean(sample(pop, n)) - mean(sample(pop, n)))
+crit    <- quantile(null_diffs, c(0.025, 0.975))
+p_value <- mean(abs(null_diffs) >= abs(observed))
+```
+
+```{r}
+#| label: fig-null
+#| fig-cap: "Simulated distribution of the difference in mean wages when the program has no effect. Red: the 5 percent rejection region. Blue lines: the observed difference and its mirror image; the share of the distribution beyond them is the p-value."
+#| fig-width: 7
+#| fig-height: 3.2
+#| echo: false
+ggplot(data.frame(d = null_diffs), aes(d)) +
+  geom_histogram(aes(fill = d <= crit[1] | d >= crit[2]), bins = 70, colour = "white",
+                 linewidth = 0.1, show.legend = FALSE) +
+  scale_fill_manual(values = c(`TRUE` = "#D55E00", `FALSE` = "grey75")) +
+  geom_vline(xintercept = c(-1, 1) * abs(observed), colour = "#0072B2", linewidth = 0.8) +
+  scale_x_continuous(labels = scales::dollar) +
+  labs(x = "difference in mean wage, treated minus control", y = "simulated experiments")
+```
+
+The rejection region is everything beyond `r dol(crit[1])` and `r dol(crit[2])`: differences
+that would arise less than 5 percent of the time if the program did nothing. The observed
+difference is `r dol(observed)`. A difference at least that large, in either direction,
+shows up in `r round(100 * p_value)` percent of no-effect experiments, so the p-value is
+`r formatC(p_value, format = "f", digits = 2)` and the test does not reject.
+
+That is the right reading of a p-value: how surprising the data would be if the null were
+true. It is not the probability that the null is true, and here the null is in fact false.
+The test simply has too little data to see a \$2 effect against wages this dispersed.
+
+## How much data a real effect needs
+
+Change the true effect, the sample size per group, or the significance level. The grey bars
+are the null distribution, the red lines its rejection boundaries, the blue outline 1,000
+studies run with the true effect, and the black line the one study drawn this time.
+
+```{ojs}
+//| echo: false
+viewof effect = Inputs.range([0, 8], {value: 2, step: 0.5, label: "true effect ($/hour)"})
+viewof n2 = Inputs.range([10, 2000], {value: 50, step: 10, label: "workers per group"})
+viewof alpha = Inputs.radio([0.01, 0.05, 0.10], {value: 0.05, label: "significance level"})
+viewof seed2 = Inputs.button("run a new study", {value: 1, reduce: v => v + 1})
+```
+
+```{ojs}
+//| echo: false
+test = {
+  const rng = d3.randomLcg(seed2 * 104729 + 7);
+  const draw = d3.randomLogNormal.source(rng)(Math.log(25), 0.6);
+  const meanOf = (k, shift) => { let t = 0; for (let i = 0; i < k; i++) t += draw(); return t / k + shift; };
+  const nullD = Float64Array.from({length: 2000}, () => meanOf(n2, 0) - meanOf(n2, 0)).sort();
+  const lo = d3.quantileSorted(nullD, alpha / 2), hi = d3.quantileSorted(nullD, 1 - alpha / 2);
+  const altD = Array.from({length: 1000}, () => meanOf(n2, effect) - meanOf(n2, 0));
+  const obs = meanOf(n2, effect) - meanOf(n2, 0);
+  const p = nullD.filter(d => Math.abs(d) >= Math.abs(obs)).length / nullD.length;
+  const power = altD.filter(d => d <= lo || d >= hi).length / altD.length;
+  return {nullD: Array.from(nullD), altD, lo, hi, obs, p, power};
+}
+
+md`This study: difference **${test.obs < 0 ? "−" : ""}$${Math.abs(test.obs).toFixed(2)}**, p-value **${test.p < 0.001 ? "below 0.001" : test.p.toFixed(3)}**, so the test ${test.p < alpha ? "**rejects**" : "does **not** reject"} at ${alpha}. Across 1,000 studies with a true effect of $${effect.toFixed(1)}, it rejects **${Math.round(100 * test.power)} percent** of the time${effect === 0 ? ", which is the false-positive rate and should be close to " + alpha : ", which is the test's power"}.`
+```
+
+```{ojs}
+//| echo: false
+bins = {
+  const ext = d3.extent([...test.nullD, ...test.altD, test.obs]);
+  return {domain: ext, thresholds: d3.ticks(ext[0], ext[1], 45)};
+}
+
+Plot.plot({
+  height: 300, marginLeft: 50,
+  x: {label: "difference in mean wage, treated minus control ($)", domain: bins.domain},
+  y: {label: "share of studies", tickFormat: "%"},
+  marks: [
+    Plot.rectY(test.nullD, Plot.binX({y: "proportion"},
+      {x: d => d, fill: "#bdbdbd", thresholds: bins.thresholds, domain: bins.domain})),
+    Plot.lineY(test.altD, Plot.binX({y: "proportion"},
+      {x: d => d, stroke: "#0072B2", strokeWidth: 2, curve: "step",
+       thresholds: bins.thresholds, domain: bins.domain})),
+    Plot.ruleX([test.lo, test.hi], {stroke: "#D55E00", strokeWidth: 2}),
+    Plot.ruleX([test.obs], {stroke: "black", strokeWidth: 2}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+With the true \$2 effect, power is under 10 percent at 50 workers per group. Push the
+sample size to about 1,500 and it reaches roughly 80 percent; set the effect to zero and the
+test rejects about as often as the significance level, which is what the level means.
+
+## What the four charts show together
+
+@fig-boot and the first interactive chart are two views of one idea: an interval describes
+how much an estimate moves from sample to sample, and its "95 percent" is a long-run hit
+rate that small samples from skewed populations fall short of. @fig-null and the second
+chart apply the same idea to testing: the null distribution shows how much a difference
+moves when nothing is going on, the rejection region and p-value are read off it, and
+whether a real effect clears that bar depends mostly on how much data there is. In both
+cases the quantity that matters is the spread of an estimate across hypothetical samples,
+and simulation makes that spread something you can see.
