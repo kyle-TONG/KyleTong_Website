@@ -20,3 +20,10 @@ blog/posts/post6/data/psid/
 
 # Local preview config for Claude Code, not part of the site
 .claude/
+
+# Class materials for post 9 (stock game results) stay local; only anonymous
+# derived returns are committed.
+blog/posts/post9/data/course/
+# Yahoo Finance prices for post 9 are re-downloadable and not redistributed.
+blog/posts/post9/data/raw/prices.csv.gz
+blog/posts/post9/data/raw/spy.csv.gz

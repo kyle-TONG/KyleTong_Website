@@ -1,0 +1,203 @@
+---
+title: "The stock model that looked too good"
+subtitle: "Revisiting the class stock game: a gradient boosting model with a spectacular backtest, a losing live trade, and what is left once the backtest is cleaned up"
+author: "Kyle Tong"
+date: 2026-11-16
+categories:
+  - machine learning
+  - finance
+  - gradient boosting
+description: "The class XGBoost model printed a Sharpe ratio of 10. Fixing the arithmetic, the weights and the features shows how much of that was real, and a rebuilt model shows how little predictability is left."
+execute:
+  warning: false
+  message: false
+  echo: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(knitr)
+theme_set(theme_minimal(base_size = 12))
+
+D <- "data/derived/"
+rd <- function(f) read_csv(paste0(D, f), show_col_types = FALSE)
+
+game      <- rd("game_results.csv")
+gs        <- rd("game_stats.csv")
+gbench    <- rd("game_benchmarks.csv")
+sens      <- rd("run_date_sensitivity.csv")
+orig      <- rd("original_metrics.csv")
+strat     <- rd("strategy_returns.csv")
+summ      <- rd("strategy_summary.csv")
+ics       <- rd("ic_summary.csv")
+seeds     <- rd("seed_robustness.csv")
+reco      <- rd("game_recommendation.csv")
+
+pct  <- function(x, d = 1) paste0(formatC(100 * x, format = "f", digits = d), "%")
+num  <- function(x, d = 2) formatC(x, format = "f", digits = d)
+gb   <- function(name) gbench$return[str_detect(gbench$portfolio, name)]
+ic   <- function(m) ics |> filter(model == m)
+s    <- function(st) summ |> filter(strategy == st)
+```
+
+In class, 45 teams each ran two $100,000 portfolios from 26 August to 1 November 2026. One
+was picked by intuition; the other followed a gradient boosting model. This post asks:
+**did the model actually predict which stocks would outperform, and can a better-built
+version do it?**
+
+## The experiment
+
+The class model is XGBoost on 95 large US stocks. From daily prices it builds momentum over
+one, three and six months, one-month volatility, five-day reversal and the day's return
+relative to SPY, and predicts each stock's return over the next 20 trading days. It trains
+on 2022-2023, tests on 2024 onward, and each month buys the ten stocks with the highest
+forecasts. Its backtest printed a Sharpe ratio of `r num(orig$sharpe_as_coded, 1)`.
+
+## What we learned from the game
+
+Model portfolios returned `r pct(gs$mean_model)` on average against
+`r pct(gs$mean_intuition)` for intuition, and won for `r round(100 * gs$share_model_better)`
+percent of teams. That is weaker evidence than it looks: the paired test gives
+p = `r num(gs$p_paired)`, and the bootstrap 95 percent interval for the gap runs from
+`r pct(gs$boot_lo)` to `r pct(gs$boot_hi)`.
+
+```{r}
+#| label: fig-game
+#| fig-cap: "Returns of the 45 teams' portfolios over the game. Reference lines: SPY, the 95 stocks held equally, and the class code's recommendation rerun on 26 August and held to the end."
+#| fig-width: 7
+#| fig-height: 3.4
+refs <- tibble(y = c(gb("^SPY"), gb("equal-weight"), gb("model recommendation")),
+               label = c("SPY", "95 stocks, equal weight", "code rerun on 26 Aug"))
+
+game |>
+  pivot_longer(c(intuition, model), names_to = "portfolio", values_to = "ret") |>
+  mutate(portfolio = recode(portfolio, intuition = "intuition", model = "model-based")) |>
+  ggplot(aes(portfolio, ret)) +
+  geom_hline(data = refs, aes(yintercept = y, linetype = label), colour = "grey35") +
+  geom_boxplot(width = 0.35, outlier.shape = NA, fill = "grey92") +
+  geom_jitter(width = 0.08, height = 0, alpha = 0.6, size = 1.8, colour = "#0072B2") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_linetype_manual(values = c("dotted", "dashed", "solid"), name = NULL) +
+  labs(x = NULL, y = "return over the game") +
+  theme(legend.position = "right")
+```
+
+Rerunning the posted code on the game's first morning, its ten picks lost
+`r pct(-gb("model recommendation"))` by 1 November while SPY lost `r pct(-gb("^SPY"))`. Run on
+any trading day from 17 August to 4 September it recommends a losing portfolio, and by
+early September its list shares only `r min(sens$overlap_with_26aug)` of ten names with the
+26 August one. The class average therefore reflects how teams implemented the picks more than the
+model, and the lesson is that one two-month game cannot separate skill from luck.
+
+## Why predicting returns is hard
+
+Monthly stock returns are mostly noise: a forecast explaining one percent of their variance
+would be worth a great deal. Whatever is predictable gets traded away once investors notice
+it, and patterns estimated on 2022-2023 need not hold in 2025. Meanwhile a backtest has many
+ways to look good by accident, and the class backtest found four:
+
+1. It annualizes monthly returns with √252 instead of √12. The Sharpe ratio is
+   `r num(orig$sharpe_correct, 1)`, not `r num(orig$sharpe_as_coded, 1)`.
+2. An `ifelse()` slip gives every stock the top stock's weight, so weights sum to
+   `r num(orig$mean_weight_sum)` on average: hidden leverage.
+3. `recipe(target ~ .)` feeds in raw prices and volume. Yahoo adjusts past prices for later
+   stock splits, so those levels carry information from the future.
+4. Building the 20-day target drops the latest 20 days, so "current" picks use month-old
+   signals.
+
+## The improved model
+
+The rebuilt model uses only stationary signals (12-1 and 6-1 month momentum, short-term
+reversal, volatility, beta, distance from the 52-week high, relative volume), ranked across
+stocks each month. It predicts returns relative to the month's average, uses one
+non-overlapping observation per month from 2013, refits monthly on outcomes already known,
+and takes its hyperparameters from 2019-2023 alone. It holds its top ten equally and pays
+10 basis points per trade.
+
+## Out-of-sample results
+
+All models are scored on the same 34 monthly formations, January 2024 to October 2026, which
+played no part in tuning. The simple benchmarks are holding all 95 stocks equally and a
+one-line rule: buy the ten stocks with the best 12-1 month momentum.
+
+### Predictive performance
+
+```{r}
+#| label: tbl-predictive
+#| tbl-cap: "Forecast quality, with forecasts and outcomes both measured relative to the month's average. Rank IC is the monthly rank correlation between forecasts and outcomes. R-squared compares squared errors with forecasting no difference between stocks."
+ics |>
+  transmute(Model = model,
+            `Rank IC` = paste0(num(mean_ic, 3), " (t = ", num(ic_t), ")"),
+            `R²` = ifelse(is.na(r2), "", pct(r2)),
+            `Top 10 minus bottom 10, monthly` = paste0(pct(spread), " (t = ", num(spread_t), ")")) |>
+  kable(align = "lrrr")
+```
+
+The class model ranks stocks well only with its price-level features. Without them its
+rank correlation is indistinguishable from zero, and either way its forecasts are worse than
+forecasting nothing (negative R²). The improved model's R² is positive but tiny, its top ten
+beat its bottom ten by `r pct(ic("improved model")$spread)` a month with a t-statistic of
+only `r num(ic("improved model")$spread_t)`, and its rank correlation is barely above the
+momentum rule's.
+
+### Investment performance
+
+```{r}
+#| label: tbl-invest
+#| tbl-cap: "Portfolio results over the same 34 months, net of trading costs. Alpha is annualized against the 95 stocks held equally."
+summ |>
+  mutate(strategy = factor(strategy, c("class model", "improved model", "12-1 momentum, top 10",
+                                       "equal-weight universe", "SPY"))) |>
+  arrange(strategy) |>
+  mutate(passive = strategy %in% c("equal-weight universe", "SPY")) |>
+  transmute(Strategy = as.character(strategy),
+            `Total return` = pct(cum_return, 0),
+            Sharpe = num(sharpe),
+            `Beta` = num(beta_spy),
+            `Worst drawdown` = pct(max_drawdown, 0),
+            `Alpha vs equal weight` = ifelse(passive, "", paste0(pct(alpha_ew), " (t = ", num(alpha_ew_t), ")")),
+            Turnover = ifelse(passive, "", pct(avg_turnover, 0))) |>
+  kable(align = "lrrrrrr")
+```
+
+```{r}
+#| label: fig-cum
+#| fig-cap: "Growth of $1, net of trading costs, over the 34 out-of-sample months."
+#| fig-width: 7
+#| fig-height: 3.4
+strat |>
+  group_by(strategy) |> arrange(date) |> mutate(growth = cumprod(1 + net)) |> ungroup() |>
+  ggplot(aes(date, growth, colour = strategy)) +
+  geom_line(linewidth = 0.9) +
+  scale_colour_manual(values = c("class model" = "#D55E00", "improved model" = "#0072B2",
+                                 "12-1 momentum, top 10" = "#56B4E9",
+                                 "equal-weight universe" = "grey35", "SPY" = "grey70"),
+                      name = NULL) +
+  scale_y_continuous(labels = scales::dollar) +
+  labs(x = NULL, y = "growth of $1") +
+  theme(legend.position = "top") +
+  guides(colour = guide_legend(nrow = 2))
+```
+
+The improved model earns the most, `r pct(s("improved model")$cum_return, 0)`
+(`r pct(min(seeds$cum_return), 0)` to `r pct(max(seeds$cum_return), 0)` across ten random
+seeds), with under half the class model's turnover. But its beta is
+`r num(s("improved model")$beta_spy)` and half its picks were chip stocks, 8 percent of the
+universe: a concentrated bet on the technology rally, with twice the passive portfolio's
+drawdown. Its Sharpe ratio is below simply holding the 95 stocks, its alpha is not
+distinguishable from zero, and in the game window its picks lost
+`r pct(-rd("game_improved.csv")$return)`, like the original's. The class model's alpha
+disappears (t = 0.32) once the look-ahead features are removed. Neither offers returns an investor could rely
+on.
+
+## What the figures show together
+
+@fig-game shows a fragile game result and a recommendation that lost money.
+@tbl-predictive shows that, scored honestly, neither model forecasts much better than a
+momentum sort, and @tbl-invest and @fig-cum show that the improved model's high return is
+risk taken, not skill. The more sophisticated model still fails to predict returns; what
+improved was the evaluation.
+
+Scripts are in `R/`; details in `README.md`. Prices from Yahoo Finance via `tidyquant`.

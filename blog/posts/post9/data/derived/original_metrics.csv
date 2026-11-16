@@ -1,0 +1,2 @@
+months,mean_weight_sum,sharpe_fixed,alpha_fixed,alpha_fixed_t,beta_fixed,sharpe_as_coded,sharpe_correct,alpha_as_coded,alpha_correct,alpha_t,beta,last_signal_date,predictors
+34,1.8127334593551077,2.3860220878092733,0.20631210540407463,2.9235043916873136,0.9240157697723161,10.22367896987812,2.230989655256887,7.364043191593024,0.35066872340919164,2.1777299971057276,1.613307742604937,2026-10-16,open high low close volume adjusted return spy_ret mom_1m mom_3m mom_6m vol_1m ret_5d excess_ret
